@@ -41,6 +41,12 @@ public class DataSaver : MonoBehaviour
 
         string json = JsonUtility.ToJson(dts);
         dbRef.Child("users").Child(userId).SetRawJsonValueAsync(json);
+
+        if (dts != null)
+        {
+            // Debug.Log(dts.waypoint);
+            waypointText.text = "Escrito: " + dts.waypoint.ToString();
+        }
     }
  
     public void LoadDataFn()
@@ -67,7 +73,7 @@ public class DataSaver : MonoBehaviour
             if (dts != null)
             {
                 // Debug.Log(dts.waypoint);
-                waypointText.text = dts.waypoint.ToString();
+                waypointText.text = "Lido: " + dts.waypoint.ToString();
             }
         }
         else
