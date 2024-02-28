@@ -5122,9 +5122,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2056093198}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: RegisterScreen
+      - m_Target: {fileID: 966396720}
+        m_TargetAssemblyTypeName: DataSaver, Assembly-CSharp
+        m_MethodName: RemoveDataFn
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -7572,9 +7572,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 11500000, guid: f9e81ed2b1d6d1243800896b138cb2d7, type: 3}
-        m_TargetAssemblyTypeName: AuthManager, Assembly-CSharp
-        m_MethodName: 
+      - m_Target: {fileID: 966396720}
+        m_TargetAssemblyTypeName: DataSaver, Assembly-CSharp
+        m_MethodName: AddDataFn
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

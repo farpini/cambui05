@@ -10,9 +10,14 @@ public class dataToSave
 {
     public int waypoint;
 }
+public class dataToCreate
+{
+    public string users;
+}
 public class DataSaver : MonoBehaviour
 {
     public dataToSave dts;
+    public dataToCreate dtc;
     public string userId = "PLK60QqNdJSbUVhoxPVcKBLBwDW2";
     DatabaseReference dbRef;
     public TMP_InputField WaypointField;
@@ -27,6 +32,35 @@ public class DataSaver : MonoBehaviour
         }
     }
 
+    public void RemoveDataFn()
+    {
+        string json = JsonUtility.ToJson(dts);
+        dbRef.Child("users").Child("waypoint").RemoveValueAsync();
+
+        if (dts != null)
+        {
+            waypointText.text = "Users Removido!";
+        }
+    }
+
+    public void AddDataFn()
+    {
+        dtc = new dataToCreate
+        {
+            users = "users"
+
+        };
+
+        string json = JsonUtility.ToJson(dtc);
+        dbRef.Child("users").Child("waypoint").SetValueAsync(json);
+
+        if (dtc != null)
+        {
+            // Debug.Log(dts.waypoint);
+            waypointText.text = "Adicionado: " + dtc.users.ToString();
+        }
+    }
+
     public void SaveDataFn()
     {
         if (WaypointField.text == "") 
@@ -36,7 +70,7 @@ public class DataSaver : MonoBehaviour
         dts = new dataToSave
         {
             waypoint = int.Parse(WaypointField.text)
-
+            
         };
 
         string json = JsonUtility.ToJson(dts);
