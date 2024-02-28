@@ -6,6 +6,8 @@ using Firebase.Database;
 using TMPro;
 using System.Threading.Tasks;
 using Microsoft.Win32;
+using System.Threading;
+using System;
 
 
 public class AuthManager : MonoBehaviour

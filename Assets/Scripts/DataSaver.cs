@@ -6,19 +6,18 @@ using Firebase.Database;
 using TMPro;
 
 [Serializable]
-public class dataToSave
+public class DataToSave
 {
     public int waypoint;
 }
-public class dataToCreate
+public class DataToCreate
 {
     public string users;
 }
 public class DataSaver : MonoBehaviour
 {
-    public dataToSave dts;
-    public dataToCreate dtc;
-    public string userId = "PLK60QqNdJSbUVhoxPVcKBLBwDW2";
+    public DataToSave dts;
+    public DataToCreate dtc;
     DatabaseReference dbRef;
     public TMP_InputField WaypointField;
     public TMP_Text waypointText;
@@ -45,7 +44,7 @@ public class DataSaver : MonoBehaviour
 
     public void AddDataFn()
     {
-        dtc = new dataToCreate
+        dtc = new DataToCreate
         {
             users = "users"
 
@@ -53,7 +52,7 @@ public class DataSaver : MonoBehaviour
 
         string json = JsonUtility.ToJson(dtc);
         dbRef.Child("users").Child("waypoint").SetValueAsync(json);
-
+        
         if (dtc != null)
         {
             // Debug.Log(dts.waypoint);
@@ -67,14 +66,14 @@ public class DataSaver : MonoBehaviour
         {
             WaypointField.text = "0";
         }
-        dts = new dataToSave
+        dts = new DataToSave
         {
             waypoint = int.Parse(WaypointField.text)
             
         };
 
         string json = JsonUtility.ToJson(dts);
-        dbRef.Child("users").Child(userId).SetRawJsonValueAsync(json);
+        dbRef.Child("users").SetRawJsonValueAsync(json);
 
         if (dts != null)
         {
@@ -90,7 +89,7 @@ public class DataSaver : MonoBehaviour
 
     IEnumerator LoadDataEnum()
     {
-        var serverData = dbRef.Child("users").Child(userId).GetValueAsync();
+        var serverData = dbRef.Child("users").GetValueAsync();
         yield return new WaitUntil(predicate: () => serverData.IsCompleted);
 
         print("process is complete");
@@ -102,7 +101,7 @@ public class DataSaver : MonoBehaviour
         {
             print("server data found");
 
-            dts = JsonUtility.FromJson<dataToSave>(jsonData);
+            dts = JsonUtility.FromJson<DataToSave>(jsonData);
             
             if (dts != null)
             {
