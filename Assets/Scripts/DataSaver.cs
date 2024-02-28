@@ -33,7 +33,7 @@ public class DataSaver : MonoBehaviour
 
     public void RemoveDataFn()
     {
-        string json = JsonUtility.ToJson(dts);
+ 
         dbRef.Child("users").Child("waypoint").RemoveValueAsync();
 
         if (dts != null)

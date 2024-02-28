@@ -8,7 +8,9 @@ using System.Threading.Tasks;
 using Microsoft.Win32;
 using System.Threading;
 using System;
-
+using System.Security.AccessControl;
+using UnityEditor.PackageManager;
+using System.Runtime.Remoting;
 
 public class AuthManager : MonoBehaviour
 {
@@ -32,8 +34,8 @@ public class AuthManager : MonoBehaviour
     public TMP_InputField passwordRegisterField;
     public TMP_InputField passwordRegisterVerifyField;
     public TMP_Text warningRegisterText;
-
     public UIManager UIManager;
+
 
     void Awake()
     {
@@ -122,6 +124,7 @@ public class AuthManager : MonoBehaviour
 
     private IEnumerator Register(string _email, string _password, string _username)
     {
+
         if (_username == "")
         {
             //If the username field is blank show a warning
@@ -180,6 +183,7 @@ public class AuthManager : MonoBehaviour
                     //Wait until the task completes
                     yield return new WaitUntil(predicate: () => ProfileTask.IsCompleted);
 
+
                     if (ProfileTask.Exception != null)
                     {
                         //If there are errors handle them
@@ -192,9 +196,10 @@ public class AuthManager : MonoBehaviour
                     {
                         //Username is now set
                         //Now return to login screen
+                        warningLoginText.text = "";
                         confirmLoginText.text = "Usuário criado!";
-                        UIManager.instance.LoginScreen();
-                        warningRegisterText.text = "";
+                        warningRegisterText.text = "";                     
+                        UIManager.instance.LoginScreen();                     
                     }
                 }
             }
