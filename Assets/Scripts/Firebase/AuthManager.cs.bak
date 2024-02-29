@@ -14,9 +14,6 @@ using System.Runtime.Remoting;
 
 public class AuthManager : MonoBehaviour
 {
-
-    public static AuthManager instance;
-
     //Firebase variables
     [Header("Firebase")]
     public DependencyStatus dependencyStatus;
@@ -38,16 +35,10 @@ public class AuthManager : MonoBehaviour
     public TMP_InputField passwordRegisterVerifyField;
     public TMP_Text warningRegisterText;
     public UIManager UIManager;
-    public Action<string, string> OnNewRegister;
-    public Action<string> OnLogin;
+
 
     void Awake()
     {
-        if (instance == null)
-        {
-            instance = this;
-        }
-
         //Check that all of the necessary dependencies for Firebase are present on the system
         FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task =>
         {
@@ -128,7 +119,6 @@ public class AuthManager : MonoBehaviour
             warningLoginText.text = "";
             confirmLoginText.text = "Logado!";
             UIManager.OpenWaypointTest();
-            OnLogin?.Invoke(User.UserId);
         }
     }
 
@@ -208,10 +198,8 @@ public class AuthManager : MonoBehaviour
                         //Now return to login screen
                         warningLoginText.text = "";
                         confirmLoginText.text = "Usuário criado!";
-                        UIManager.instance.LoginScreen();
-                        warningRegisterText.text = "";
-                        OnNewRegister?.Invoke(User.UserId, _username);
-                        
+                        warningRegisterText.text = "";                     
+                        UIManager.instance.LoginScreen();                     
                     }
                 }
             }
