@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using System;
 using Firebase.Database;
 using TMPro;
@@ -30,11 +31,10 @@ public class DataSaver : MonoBehaviour
         }
     }
 
-private void Start ()
+    private void Start ()
     {
         AuthManager.instance.OnNewRegister += NewRegister;
         AuthManager.instance.OnLogin += OnLogin;
-
     }
 
     private void OnApplicationQuit ()
@@ -139,9 +139,10 @@ private void Start ()
 
         var atributos = new Dictionary<string, object>();
         atributos.Add("username", _userName);
-        atributos.Add("waypoint", 34);
+        atributos.Add("waypoint", 0);
         atributos.Add("sala", 0);
         atributos.Add("genero", "male");
+        atributos.Add("tipo", "aluno");
 
         userDataGlobal = new UserData
         {
