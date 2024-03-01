@@ -133,7 +133,7 @@ public class DataSaver : MonoBehaviour
         }
     }
 
-    private void NewRegister (string _userId, string _userName)
+    private void NewRegister (string _userId, string _userName, Gendertype _gender, Type _type)
     {
         userId = _userId;
 
@@ -141,8 +141,8 @@ public class DataSaver : MonoBehaviour
         atributos.Add("username", _userName);
         atributos.Add("waypoint", 0);
         atributos.Add("sala", 0);
-        atributos.Add("genero", "male");
-        atributos.Add("tipo", "aluno");
+        atributos.Add("genero", _gender.ToString());
+        atributos.Add("tipo", _type.ToString());
 
         userDataGlobal = new UserData
         {

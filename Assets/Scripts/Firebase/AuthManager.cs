@@ -1,16 +1,13 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 using Firebase;
 using Firebase.Auth;
-using Firebase.Database;
 using TMPro;
 using System.Threading.Tasks;
-using Microsoft.Win32;
-using System.Threading;
 using System;
-using System.Security.AccessControl;
-using UnityEditor.PackageManager;
-using System.Runtime.Remoting;
+
+
 
 public class AuthManager : MonoBehaviour
 {
@@ -38,8 +35,14 @@ public class AuthManager : MonoBehaviour
     public TMP_InputField passwordRegisterVerifyField;
     public TMP_Text warningRegisterText;
     public UIManager UIManager;
-    public Action<string, string> OnNewRegister;
+    public Action<string, string, Gendertype, Type> OnNewRegister;
     public Action<string> OnLogin;
+    public Gendertype gender = Gendertype.masculino;
+    public Type type = Type.aluno;
+
+    [SerializeField] 
+    private Toggle toggle1, toggle2, toggletype1, toggletype2;
+    private ToggleGroup allowSwitch;
 
     void Awake()
     {
@@ -47,6 +50,14 @@ public class AuthManager : MonoBehaviour
         {
             instance = this;
         }
+           
+        toggle1.isOn = true;
+        toggle2.isOn = false;
+
+        toggletype1.isOn = false;
+        toggletype2.isOn = true;
+
+
 
         //Check that all of the necessary dependencies for Firebase are present on the system
         FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task =>
@@ -70,6 +81,47 @@ public class AuthManager : MonoBehaviour
         //Set the authentication instance object
         auth = FirebaseAuth.DefaultInstance;
     }
+
+    public void Toggle1Selected()
+    {
+        if (toggle1.isOn) 
+        {
+            toggle2.isOn = false;
+            gender = Gendertype.masculino;
+            Debug.Log(gender);
+        }
+ 
+    }
+    public void Toggle2Selected()
+    {
+        if (toggle2.isOn)
+        {
+            toggle1.isOn = false;
+            gender = Gendertype.feminino;
+            Debug.Log(gender);
+        }
+    }
+
+    public void ToggleType1Selected()
+    {
+        if (toggletype1.isOn)
+        {
+            toggletype2.isOn = false;
+            type = Type.professor;
+            Debug.Log(type);
+        }
+
+    }
+    public void ToggleType2Selected()
+    {
+        if (toggletype2.isOn)
+        {
+            toggletype1.isOn = false;
+            type = Type.aluno;
+            Debug.Log(type);
+        }
+    }
+
 
     //Function for the login button
     public void LoginButton()
@@ -210,11 +262,21 @@ public class AuthManager : MonoBehaviour
                         confirmLoginText.text = "Usuário criado!";
                         UIManager.instance.LoginScreen();
                         warningRegisterText.text = "";
-                        OnNewRegister?.Invoke(User.UserId, _username);
+                        OnNewRegister?.Invoke(User.UserId, _username, gender, type);
                         
                     }
                 }
             }
         }
     }
+}
+
+public enum Gendertype
+{
+    masculino,feminino
+}
+
+public enum Type
+{
+    professor, aluno
 }
