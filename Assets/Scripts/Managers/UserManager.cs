@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Runtime.Remoting.Metadata;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Analytics;
 
 public class UserManager : MonoBehaviour
 {
@@ -23,6 +24,8 @@ public class UserManager : MonoBehaviour
     public WaypointHandler[] waypoints;
 
     public List<int[]> waypointsInRangeList;
+
+    public UserData userDataGlobal;
 
     //public UserData userData;
 
@@ -42,12 +45,12 @@ public class UserManager : MonoBehaviour
 
         waypointsInRangeList = new List<int[]>
         {
-            new int[] { 1, 2, 5 },
-            new int[] { 0, 2, 3 },
-            new int[] { 0, 1, 4 },
-            new int[] { 1 },
-            new int[] { 2 },
-            new int[] { 0 }
+            new int[] { 1, 2, 5 }, // 0
+            new int[] { 0, 2, 3 }, // 1
+            new int[] { 0, 1, 4 }, // 2
+            new int[] { 1 }, // 3
+            new int[] { 2 }, // 4
+            new int[] { 0 } // 5
         };
     }
 
@@ -55,11 +58,12 @@ public class UserManager : MonoBehaviour
     {
         //OnLoginSuccess();
         // OnMateLogged((int)Random.Range(0.0f, 100.0f));
-        AuthManager.instance.OnLogin += OnLogin;
+        FirebaseManager.instance.OnLoginSuccess += OnLogin;
+        FirebaseManager.instance.OnNewRegister += SetNewUserData;
 
         if (waypoints.Length != waypointsInRangeList.Count)
         {
-            Debug.LogError("ahhahaa");
+            Debug.LogError("error");
             return;
         }
 
@@ -71,6 +75,7 @@ public class UserManager : MonoBehaviour
 
     private void Update ()
     {
+        // testing only
         if (Input.GetKeyDown(KeyCode.J))
         {
             OnClientStateChanged(playerData.clientState);
@@ -79,29 +84,58 @@ public class UserManager : MonoBehaviour
 
         if (matesData.Count < usersConnected - 1)
         {
-            //adicionar user na lista mate
+            //adicionar userAPI na lista mate
         }
         else if (matesData.Count > usersConnected - 1)
         {
-            //remover user da lista mate
+            //remover userAPI da lista mate
         }
     }
 
     private void OnLogin (string _userId)
     {
-        Debug.Log("OK");
-        //var obj = new GameObject();
-        //var playerHandler = obj.AddComponent<PlayerHandler>();
+        Debug.Log("Login success");
 
+        // get the user data from the database
+        GetUserData(_userId);
 
-
+        // notify other clients that this user connected
         UpdateUsersConnected();
 
+        // create a player handler for this client
         CreatePlayerHandler(_userId);
+    }
+
+    private void GetUserData (string userId)
+    {
+        FirebaseManager.instance.GetUser(userId, (userDataGlobal) =>
+        {
+            Debug.Log("Player data loaded from the database successfuly!");
+        });
+    }
+
+    private void SetNewUserData (string _userId, string _userName, GenderType _gender, ClientType _type)
+    {
+        userDataGlobal = new UserData
+        {
+            atributos = new Dictionary<string, object>() 
+            {
+                { "username", _userName},
+                { "waypoint", 0 },
+                { "sala", 0 },
+                { "genero", _gender.ToString() },
+                { "tipo", _type.ToString() },
+                { "status", ClientStatus.offline.ToString() },
+                { "state", ClientState.Stand.ToString() } 
+            }
+        };
+
+        FirebaseManager.instance.SetUser(_userId, userDataGlobal);
     }
 
     private void UpdateUsersConnected ()
     {
+        /*
         FirebaseDatabase.DefaultInstance
         .GetReference("usersConnectedCount")
         .GetValueAsync().ContinueWith(task =>
@@ -119,10 +153,12 @@ public class UserManager : MonoBehaviour
                 FirebaseDatabase.DefaultInstance.GetReference("newUsersPending").SetValueAsync(playerData.userId);
             }
         });
+        */
     }
 
     private void OnNewUsersPendingChanged (object sender, ValueChangedEventArgs args)
     {
+        /*
         var newUsersPeding = args.Snapshot.Value.ToString();
 
         if (newUsersPeding != playerData.userId && newUsersPeding != "")
@@ -147,8 +183,10 @@ public class UserManager : MonoBehaviour
                     }
                 });
         }
+        */
     }
 
+    /*
     private IEnumerator GetDataFromUserPending ()
     {
         yield return new WaitUntil(() => pendingUserRead);
@@ -164,6 +202,7 @@ public class UserManager : MonoBehaviour
         var userConnectedCount = args.Snapshot.Value;
         Debug.Log(userConnectedCount);
     }
+    */
 
     public void OnMateLogged (int userId)
     {
@@ -215,7 +254,7 @@ public class UserManager : MonoBehaviour
 
         playerData.OnChangeWaypoint += OnPlayerWaypointChanged;
         playerData.onChangeClientState += OnClientStateChanged;
-        FirebaseDatabase.DefaultInstance.GetReference("usersConnectedCount").ValueChanged += OnUserConnectedCountChanged;
+        //FirebaseDatabase.DefaultInstance.GetReference("usersConnectedCount").ValueChanged += OnUserConnectedCountChanged;
         FirebaseDatabase.DefaultInstance.GetReference("newUsersPending").ValueChanged += OnNewUsersPendingChanged;
         playerHandler.OnPlayerGoalWaypointChanged += NewPlayerGoal;
     }
@@ -236,3 +275,28 @@ public class UserManager : MonoBehaviour
     }
 }
 
+[Serializable]
+public class UserData
+{
+    public Dictionary<string, object> atributos;
+}
+
+public enum UserAttribute
+{
+    genero, sala, tipo, waypoint, username, status, state
+}
+
+public enum GenderType
+{
+    none, masculino, feminino
+}
+
+public enum ClientType
+{
+    professor, aluno
+}
+
+public enum ClientStatus
+{
+    offline, online
+}

@@ -13,7 +13,7 @@ public abstract class ClientSO : ScriptableObject
     public int actualWaypoint;
     public int roomId;
     public ClientState clientState;
-    public ClientRole clientRole;
+    public ClientType clientRole;
     public List<string> messages;
 
     public Action<int> OnChangeWaypoint;
@@ -42,15 +42,6 @@ public enum ClientState
     Stand = 0,
     Sit = 1
 }
-
-public enum ClientRole
-{
-    Student = 0,
-    Professor = 1
-}
-
-
-
 
 
 public class MateHandler : ClientHandler
@@ -148,7 +139,7 @@ public class SceneManager
 
     public void OpenUIForPlayVideo ()
     {
-        if (playerData.clientRole == ClientRole.Professor)
+        if (playerData.clientRole == ClientType.professor)
         {
             //var boardObject.
         }
