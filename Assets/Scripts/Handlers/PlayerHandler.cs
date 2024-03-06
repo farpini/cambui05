@@ -11,6 +11,8 @@ public class PlayerHandler : ClientHandler
 
     public Vector3 goalPosition;
 
+    public float verticalRotationMax;
+
     public Action<WaypointHandler> OnPlayerGoalWaypointChanged;
     public Action<DeskHandler> OnPlayerDeskChanged;
     public Action<ClientState> OnClientStateChanged;
@@ -54,7 +56,7 @@ public class PlayerHandler : ClientHandler
             }
         }
 
-        if (Input.GetKey(KeyCode.RightArrow))
+        if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
         {
             var playerRotation = transform.eulerAngles;
             var rotationValue = playerRotation.y;
@@ -62,13 +64,40 @@ public class PlayerHandler : ClientHandler
             playerRotation.y = rotationValue;
             transform.eulerAngles = playerRotation;
         }
-        else if (Input.GetKey(KeyCode.LeftArrow)) 
+        else if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A)) 
         {
             var playerRotation = transform.eulerAngles;
             var rotationValue = playerRotation.y;
             rotationValue -= Time.deltaTime * cameraSpeed;
             playerRotation.y = rotationValue;
             transform.eulerAngles = playerRotation;
+        }
+
+        var verticalRotationForNegative = 360f - verticalRotationMax;
+
+        if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
+        {
+            var cameraRotation = Camera.main.gameObject.transform.eulerAngles;
+            var cameraRotationX = cameraRotation.x;
+            cameraRotationX -= Time.deltaTime * cameraSpeed;
+            if (cameraRotationX > verticalRotationMax && cameraRotationX < verticalRotationForNegative)
+            {
+                cameraRotationX = cameraRotationX > verticalRotationMax ? verticalRotationForNegative : verticalRotationMax;
+            }
+            cameraRotation.x = cameraRotationX;
+            Camera.main.gameObject.transform.eulerAngles = cameraRotation;
+        }
+        else if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S))
+        {
+            var cameraRotation = Camera.main.gameObject.transform.eulerAngles;
+            var cameraRotationX = cameraRotation.x;
+            cameraRotationX += Time.deltaTime * cameraSpeed;
+            if (cameraRotationX > verticalRotationMax && cameraRotationX < verticalRotationForNegative)
+            {
+                cameraRotationX = cameraRotationX > verticalRotationMax ? verticalRotationMax : verticalRotationForNegative;
+            }
+            cameraRotation.x = cameraRotationX;
+            Camera.main.gameObject.transform.eulerAngles = cameraRotation;
         }
 
         UpdatePosition();
