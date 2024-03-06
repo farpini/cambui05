@@ -114,13 +114,14 @@ public class UserManager : MonoBehaviour
         });
     }
 
-    private void SetNewUserData (string _userId, string _userName, GenderType _gender, ClientType _type)
+    private void SetNewUserData (string _userId, string _userName, string _matricula, GenderType _gender, ClientType _type)
     {
         userDataGlobal = new UserData
         {
             atributos = new Dictionary<string, object>() 
             {
                 { "username", _userName},
+                { "matricula", _matricula},
                 { "waypoint", 0 },
                 { "sala", 0 },
                 { "genero", _gender.ToString() },
@@ -283,13 +284,14 @@ public class UserData
 
 public enum UserAttribute
 {
-    genero, sala, tipo, waypoint, username, status, state
+    genero, sala, tipo, waypoint, username, status, state, matricula
 }
 
 public enum GenderType
 {
     none, masculino, feminino
 }
+
 
 public enum ClientType
 {

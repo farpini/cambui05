@@ -24,7 +24,7 @@ public class FirebaseManager : MonoBehaviour
     private string currentUserId = "";
 
     // Eventos
-    public Action<string, string, GenderType, ClientType> OnNewRegister;
+    public Action<string, string, string, GenderType, ClientType> OnNewRegister;
 
     public Action<string> OnLoginSuccess;
     public Action<string> OnLoginMissing;
@@ -134,9 +134,9 @@ public class FirebaseManager : MonoBehaviour
         StartCoroutine(UserRegister(userNameText, passwordText, passwordConfirmText, userGenderType));
     }
 
-    public void OnAdminRegisterButtonClicked (string emailText, string passwordText, ClientType clientType)
+    public void OnAdminRegisterButtonClicked (string emailText, string passwordText, string matricula, ClientType clientType)
     {
-        StartCoroutine(AdminRegister(emailText, passwordText, clientType));
+        StartCoroutine(AdminRegister(emailText, passwordText, matricula, clientType));
     }
 
     private IEnumerator Login (string _email, string _password)
@@ -217,6 +217,7 @@ public class FirebaseManager : MonoBehaviour
             SetUserAttribute(currentUserId, UserAttribute.username, _username);
             SetUserAttribute(currentUserId, UserAttribute.genero, _genderType);
 
+            OnLoginPrintResult?.Invoke("Usuário criado!", true);
             OnUserRegisterSuccess?.Invoke(currentUserId);
         }
 
@@ -224,7 +225,7 @@ public class FirebaseManager : MonoBehaviour
     }
 
 
-    private IEnumerator AdminRegister (string _email, string _password, ClientType _clientType)
+    private IEnumerator AdminRegister (string _email, string _password, string _matricula, ClientType _clientType)
     {
         //Call the Firebase auth signin function passing the email and password
         Task<AuthResult> RegisterTask = authAPI.CreateUserWithEmailAndPasswordAsync(_email, _password);
@@ -286,7 +287,7 @@ public class FirebaseManager : MonoBehaviour
                 }
                 else
                 {
-                    OnNewRegister?.Invoke(User.UserId, username, GenderType.none, _clientType);
+                    OnNewRegister?.Invoke(User.UserId, username, _matricula, GenderType.none, _clientType);
                     OnAdminRegisterPrintResult?.Invoke("Usuário criado!", true);
                 }
             }

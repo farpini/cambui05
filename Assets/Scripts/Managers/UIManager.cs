@@ -34,6 +34,7 @@ public class UIManager : MonoBehaviour
     public Toggle toggleFemale;
 
     [Header("AdminUI")]
+    public TMP_InputField adminMatriculaField;
     public TMP_InputField adminEmailField;
     public TMP_InputField adminPasswordField;
     public TMP_Text registerAdminResultText;
@@ -146,13 +147,13 @@ public class UIManager : MonoBehaviour
 
     private void OnRegisterButtonClicked ()
     {
-        FirebaseManager.instance.OnRegisterButtonClicked(registerUsernameField.text, registerPasswordField.text,
+        FirebaseManager.instance.OnRegisterButtonClicked(registerUsernameField.text, registerPasswordField.text, 
             registerPasswordConfirmField.text, toggleMale.isOn ? GenderType.masculino : GenderType.feminino);
     }
 
     private void OnAdminRegisterButtonClicked ()
     {
-        FirebaseManager.instance.OnAdminRegisterButtonClicked(adminEmailField.text, adminPasswordField.text,
+        FirebaseManager.instance.OnAdminRegisterButtonClicked(adminEmailField.text, adminPasswordField.text, adminMatriculaField.text,
             toggleProfessor.isOn ? ClientType.professor : ClientType.aluno);
     }
 
@@ -178,6 +179,7 @@ public class UIManager : MonoBehaviour
         registerAdminResultText.text = registerResult;
         registerAdminResultText.color = registerSuccess ? Color.green : Color.red;
         adminEmailField.text = "";
+        adminMatriculaField.text = "";
         adminPasswordField.text = "";
     }
 
