@@ -17,7 +17,7 @@ public abstract class ClientSO : ScriptableObject
     public List<string> messages;
 
     public Action<int> OnChangeWaypoint;
-    public Action<ClientState> onChangeClientState;
+    public Action<ClientState> OnChangeClientState;
 
 }
 
@@ -82,7 +82,7 @@ public class UsersManager : MonoBehaviour
         playerHandler.Initialize((PlayerSO)playerData);
 
         playerData.OnChangeWaypoint += OnPlayerWaypointChanged;
-        playerData.onChangeClientState += OnClientStateChanged;
+        playerData.OnChangeClientState += OnClientStateChanged;
     }
 
     public void OnMateLogged (int userId)
@@ -99,7 +99,7 @@ public class UsersManager : MonoBehaviour
             mateHandler.Initialize(mate);
 
             mate.OnChangeWaypoint += OnPlayerWaypointChanged;
-            mate.onChangeClientState += OnClientStateChanged;
+            mate.OnChangeClientState += OnClientStateChanged;
         }
     }
 

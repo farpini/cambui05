@@ -12,6 +12,8 @@ public class PlayerHandler : ClientHandler
     public Vector3 goalPosition;
 
     public Action<WaypointHandler> OnPlayerGoalWaypointChanged;
+    public Action<DeskHandler> OnPlayerDeskChanged;
+    public Action<ClientState> OnClientStateChanged;
 
 
     public void Initialize (PlayerSO _playerData)
@@ -37,9 +39,18 @@ public class PlayerHandler : ClientHandler
 
             if (Physics.Raycast(ray, out var hitInfo, 1000f, layerMask))
             {
-                var waypointHandler = hitInfo.transform.gameObject.GetComponent<WaypointHandler>();
-                Debug.LogWarning("HIT: " + waypointHandler.waypointIndex);
-                SetNewGoal(waypointHandler);
+                if (hitInfo.transform.gameObject.GetComponent<WaypointHandler>())
+                {
+                    var waypointHandler = hitInfo.transform.gameObject.GetComponent<WaypointHandler>();
+                    Debug.LogWarning("HIT: " + waypointHandler.waypointIndex);
+                    SetNewGoal(waypointHandler);
+                }
+                else if (hitInfo.transform.gameObject.GetComponent<DeskHandler>())
+                {
+                    var deskHandler = hitInfo.transform.gameObject.GetComponent<DeskHandler>();
+                    Debug.LogWarning("HIT SEAT: " + deskHandler.deskIndex);
+                    SetNewDesk(deskHandler);
+                }
             }
         }
 
@@ -78,6 +89,7 @@ public class PlayerHandler : ClientHandler
         goalPosition = waypointHandler.transform.position;
 
         OnPlayerGoalWaypointChanged?.Invoke(waypointHandler);
+        if (playerData.clientState == ClientState.Sit) OnClientStateChanged?.Invoke(playerData.clientState);
     }
 
     private void UpdatePosition ()
@@ -86,4 +98,11 @@ public class PlayerHandler : ClientHandler
         transform.position = Vector3.MoveTowards(currentPosition, goalPosition, 0.01f);
     }
 
+    private void SetNewDesk(DeskHandler deskHandler)
+    {
+        goalPosition = deskHandler.transform.position;
+
+        OnPlayerDeskChanged?.Invoke(deskHandler);
+        OnClientStateChanged?.Invoke(playerData.clientState);
+    }
 }

@@ -22,8 +22,11 @@ public class UserManager : MonoBehaviour
     public PlayerHandler playerHandler;
 
     public WaypointHandler[] waypoints;
+    public DeskHandler[] desks;
 
     public List<int[]> waypointsInRangeList;
+    public List<int[]> desksWaypointsInRangeList;
+    public List<int[]> waypointsDesksInRangeList;
 
     public UserData userDataGlobal;
 
@@ -45,12 +48,44 @@ public class UserManager : MonoBehaviour
 
         waypointsInRangeList = new List<int[]>
         {
-            new int[] { 1, 2, 5 }, // 0
-            new int[] { 0, 2, 3 }, // 1
-            new int[] { 0, 1, 4 }, // 2
-            new int[] { 1 }, // 3
-            new int[] { 2 }, // 4
-            new int[] { 0 } // 5
+            new int[] { 1, 2, 7 }, //0
+            new int[] { 0, 2, 3 }, //1
+            new int[] { 0, 1, 4 }, //2
+            new int[] { 1, 5 }, //3
+            new int[] { 2, 6 }, //4
+            new int[] { 3 }, //5
+            new int[] { 4 }, //6
+            new int[] { 0 }, //7
+        };
+
+        desksWaypointsInRangeList = new List<int[]>
+        {
+            new int[] { 1, 3}, //0
+            new int[] { 3 }, //1
+            new int[] { 5 }, //2
+            new int[] { 5 }, //3
+            new int[] { 1, 3}, //4
+            new int[] { 3 }, //5
+            new int[] { 5 }, //6
+            new int[] { 5 }, //7
+            new int[] { 2, 4 }, //8
+            new int[] { 4 }, //9
+            new int[] { 6 }, //10
+            new int[] { 6 }, //11
+            new int[] { 2, 4 }, //12
+            new int[] { 4 }, //13
+            new int[] { 6 }, //14
+            new int[] { 6 }, //15
+        };
+
+        waypointsDesksInRangeList = new List<int[]>
+        {
+            new int[] { 0, 4},
+            new int[] { 8, 12},
+            new int[] { 0, 1, 4, 5},
+            new int[] { 8, 9, 12, 13},
+            new int[] { 2, 3, 6, 7},
+            new int[] { 10, 11, 14, 15},
         };
     }
 
@@ -70,6 +105,17 @@ public class UserManager : MonoBehaviour
         for (int i = 0; i < waypoints.Length; i++)
         {
             waypoints[i].waypointsInRange = waypointsInRangeList[i];
+        }
+
+        for (int i = 0; i < waypoints.Length; i++)
+        {
+            waypoints[i].waypointsInRange = waypointsInRangeList[i];
+            if (i >= 1 && i <= 6) waypoints[i].desksInRange = waypointsDesksInRangeList[i - 1];
+        }
+
+        for (int i = 0; i < desks.Length; i++)
+        {
+            desks[i].waypointsInRange = desksWaypointsInRangeList[i];
         }
     }
 
@@ -215,14 +261,15 @@ public class UserManager : MonoBehaviour
         mateHandler.Initialize((MateSO)mate);
 
         mate.OnChangeWaypoint += OnPlayerWaypointChanged;
-        mate.onChangeClientState += OnClientStateChanged;
+        mate.OnChangeClientState += OnClientStateChanged;
 
         matesData.Add(mate);
     }
 
     public void OnPlayerWaypointChanged (int waypoint)
     {
-        FirebaseDatabase.DefaultInstance.GetReference("users/" + playerData.userId + "/atributos/waypoint").SetValueAsync(waypoint);
+        //FirebaseDatabase.DefaultInstance.GetReference("users/" + playerData.userId + "/atributos/waypoint").SetValueAsync(waypoint);
+        FirebaseManager.instance.SetUserAttribute<int>(playerData.userId, UserAttribute.waypoint, waypoint);
         // send waypoint to firebase.
     }
 
@@ -238,7 +285,8 @@ public class UserManager : MonoBehaviour
             break;
         }
         playerData.clientState = clientState;
-        FirebaseDatabase.DefaultInstance.GetReference("teste/" + playerData.userId + "/atributos/state").SetValueAsync(clientState.ToString());
+        FirebaseManager.instance.SetUserAttribute<ClientState>(playerData.userId, UserAttribute.state, playerData.clientState);
+        //FirebaseDatabase.DefaultInstance.GetReference("users/" + playerData.userId + "/atributos/state").SetValueAsync(clientState.ToString());
     }
 
     private void CreatePlayerHandler (string _userId)
@@ -254,7 +302,8 @@ public class UserManager : MonoBehaviour
         playerHandler.Initialize((PlayerSO)playerData);
 
         playerData.OnChangeWaypoint += OnPlayerWaypointChanged;
-        playerData.onChangeClientState += OnClientStateChanged;
+        playerHandler.OnClientStateChanged += OnClientStateChanged;
+        playerHandler.OnPlayerDeskChanged += OnPlayerDeskChanged;
         //FirebaseDatabase.DefaultInstance.GetReference("usersConnectedCount").ValueChanged += OnUserConnectedCountChanged;
         FirebaseDatabase.DefaultInstance.GetReference("newUsersPending").ValueChanged += OnNewUsersPendingChanged;
         playerHandler.OnPlayerGoalWaypointChanged += NewPlayerGoal;
@@ -267,12 +316,45 @@ public class UserManager : MonoBehaviour
             waypoints[i].gameObject.SetActive(false);
         }
 
+        for (int i = 0; i < desks.Length; i++)
+        {
+            desks[i].gameObject.SetActive(false);
+        }
+
         for (int i = 0; i < waypointHandler.waypointsInRange.Length; i++)
         {
             waypoints[waypointHandler.waypointsInRange[i]].gameObject.SetActive(true);
         }
 
+        for (int i = 0; i < waypointHandler.desksInRange.Length; i++)
+        {
+            desks[waypointHandler.desksInRange[i]].gameObject.SetActive(true);
+        }
+
         OnPlayerWaypointChanged(waypointHandler.waypointIndex);
+    }
+
+    private void OnPlayerDeskChanged(DeskHandler deskHandler)
+    {
+        for (int i = 0; i < waypoints.Length; i++)
+        {
+            waypoints[i].gameObject.SetActive(false);
+        }
+
+        for (int i = 0; i < deskHandler.waypointsInRange.Length; i++)
+        {
+            waypoints[deskHandler.waypointsInRange[i]].gameObject.SetActive(true);
+        }
+
+        for (int i = 0; i < desks.Length; i++)
+        {
+            if (i != deskHandler.deskIndex)
+            {
+                desks[i].gameObject.SetActive(false);
+            }
+        }
+
+        OnPlayerWaypointChanged(deskHandler.deskIndex);
     }
 }
 

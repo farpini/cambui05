@@ -7,4 +7,5 @@ public class WaypointHandler : MonoBehaviour
     public int waypointIndex;
 
     public int[] waypointsInRange;
+    public int[] desksInRange;
 }
