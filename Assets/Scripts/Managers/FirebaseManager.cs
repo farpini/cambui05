@@ -4,10 +4,10 @@ using UnityEngine.UI;
 using Firebase;
 using Firebase.Auth;
 using Firebase.Database;
+using Firebase.Extensions;
 using TMPro;
 using System.Threading.Tasks;
 using System;
-using Firebase.Extensions;
 using UnityEngine.Analytics;
 using Newtonsoft.Json;
 
@@ -212,10 +212,30 @@ public class FirebaseManager : MonoBehaviour
         }
         else 
         {
-            // change the password in the authAPI here...
-
+            
             SetUserAttribute(currentUserId, UserAttribute.username, _username);
             SetUserAttribute(currentUserId, UserAttribute.genero, _genderType);
+
+            // change the password in the authAPI here...
+
+            FirebaseUser user = authAPI.CurrentUser;
+            string newPassword = _password;
+            if (user != null) {
+                user.UpdatePasswordAsync(newPassword).ContinueWith(task => {
+                    if (task.IsCanceled)
+                   {
+                        Debug.LogError("UpdatePasswordAsync foi cancelado.");
+                        return;
+                    }
+                    if (task.IsFaulted)
+                    {
+                        Debug.LogError("UpdatePasswordAsync encontrou um erro: " + task.Exception);
+                        return;
+                    }
+
+                    Debug.Log("Password atualizado com sucesso.");
+                });
+            }
 
             OnLoginPrintResult?.Invoke("Usuário criado!", true);
             OnUserRegisterSuccess?.Invoke(currentUserId);
