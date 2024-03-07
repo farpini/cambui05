@@ -15,9 +15,8 @@ public class UserManager : MonoBehaviour
 {
     public static UserManager instance;
 
-    public GameObject prefabAvatar1;
-    public GameObject prefabAvatar2;
     public PlayerHandler playerHandlerPrefab;
+    public MateHandler mateHandlerPrefab;
 
     public PlayerHandler playerHandler;
 
@@ -145,11 +144,11 @@ public class UserManager : MonoBehaviour
         // get the user data from the database
         GetUserData(_userId);
 
-        // notify other clients that this user connected
-        UpdateUsersConnected();
-
         // create a player handler for this client
         CreatePlayerHandler(_userId);
+
+        // notify other clients that this user connected
+        UpdateUsersConnected();
     }
 
     private void GetUserData (string userId)
@@ -182,6 +181,8 @@ public class UserManager : MonoBehaviour
 
     private void UpdateUsersConnected ()
     {
+        FirebaseDatabase.DefaultInstance.GetReference("newUsersPending").SetValueAsync(playerData.userId);
+
         /*
         FirebaseDatabase.DefaultInstance
         .GetReference("usersConnectedCount")
@@ -203,34 +204,46 @@ public class UserManager : MonoBehaviour
         */
     }
 
+    private void CreateMateHandler (UserData mateUserData, string mateId)
+    {
+        //var mateHandler = Instantiate();
+
+
+        var mateHandler = Instantiate(mateHandlerPrefab);
+
+        var mateData = ScriptableObject.CreateInstance<MateSO>();
+        mateData.userData = mateUserData;
+        mateData.userId = mateId;
+
+        mateHandler.Initialize(mateData);
+
+        FirebaseManager.instance.RegisterUserAttributeChangeValueEvent(mateData.userId, UserAttribute.waypoint,
+            mateData.OnWaypointChangedValue);
+
+
+
+        //playerData.OnChangeWaypoint += OnPlayerWaypointChanged;
+        //playerHandler.OnClientStateChanged += OnClientStateChanged;
+        //playerHandler.OnPlayerDeskChanged += OnPlayerDeskChanged;
+        //FirebaseDatabase.DefaultInstance.GetReference("usersConnectedCount").ValueChanged += OnUserConnectedCountChanged;
+        //FirebaseDatabase.DefaultInstance.GetReference("newUsersPending").ValueChanged += OnNewUsersPendingChanged;
+        //playerHandler.OnPlayerGoalWaypointChanged += NewPlayerGoal;
+
+    }
+
     private void OnNewUsersPendingChanged (object sender, ValueChangedEventArgs args)
     {
-        /*
-        var newUsersPeding = args.Snapshot.Value.ToString();
+        string newUserConnectedId = args.Snapshot.Value.ToString();
 
-        if (newUsersPeding != playerData.userId && newUsersPeding != "")
+        if (newUserConnectedId == "" || newUserConnectedId == playerData.userId)
         {
-            pendingUserRead = false;
-
-            StartCoroutine(GetDataFromUserPending());
-
-            FirebaseDatabase.DefaultInstance.GetReference("users/" + newUsersPeding)
-                .GetValueAsync()
-                .ContinueWith(task =>
-                {
-                    if (task.IsFaulted)
-                    {
-                        Debug.LogError(task);
-                    }
-                    else if (task.IsCompleted)
-                    {
-                        DataSnapshot snapshot = task.Result;
-                        pendingUserJson = snapshot.GetRawJsonValue();
-                        pendingUserRead = true;
-                    }
-                });
+            return;
         }
-        */
+
+        FirebaseManager.instance.GetUser(newUserConnectedId, (UserData newUserData) =>
+        {
+            CreateMateHandler(newUserData, newUserConnectedId);
+        });
     }
 
     /*
@@ -296,6 +309,7 @@ public class UserManager : MonoBehaviour
         playerHandler.SetCamera(waypoints[0]);
 
         playerData = ScriptableObject.CreateInstance<PlayerSO>();
+        playerData.userData = userDataGlobal;
         playerData.avatarId = 0;
         playerData.userId = _userId;
 

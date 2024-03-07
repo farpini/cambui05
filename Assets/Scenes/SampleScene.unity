@@ -35645,9 +35645,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1be12a346a7e5ab4b9f2184ab25884c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prefabAvatar1: {fileID: 0}
-  prefabAvatar2: {fileID: 0}
   playerHandlerPrefab: {fileID: 1220548723969342733, guid: 051aaf8a3886c9f4980285ac6968af26,
+    type: 3}
+  mateHandlerPrefab: {fileID: 2700265115944868948, guid: 9c4b2666e8fed8047aa34c532227a498,
     type: 3}
   playerHandler: {fileID: 0}
   waypoints:

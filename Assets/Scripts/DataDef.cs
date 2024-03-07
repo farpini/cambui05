@@ -7,7 +7,12 @@ using UnityEngine;
 [Serializable]
 public abstract class ClientSO : ScriptableObject
 {
+    public UserData userData;
+
     public string userId;
+
+
+
     public int avatarId;
     public string userName;
     public int actualWaypoint;
@@ -32,7 +37,7 @@ public class PlayerSO : ClientSO
 [Serializable]
 public class MateSO : ClientSO
 {
-
+    public EventHandler<ValueChangedEventArgs> OnWaypointChangedValue;
 
 
 }
@@ -44,19 +49,7 @@ public enum ClientState
 }
 
 
-public class MateHandler : ClientHandler
-{
-    public MateSO mateData => (MateSO)clientData;
 
-
-
-
-    public void Initialize (MateSO _mateData)
-    {
-        clientData = _mateData;
-    }
-
-}
 
 public class UsersManager : MonoBehaviour
 {

@@ -23,8 +23,6 @@ public class FirebaseManager : MonoBehaviour
 
     private string currentUserId = "";
 
-    bool flag;
-
     // Eventos
     public Action<string, string, string, GenderType, ClientType> OnNewRegister;
 
@@ -121,6 +119,36 @@ public class FirebaseManager : MonoBehaviour
         var json = JsonConvert.SerializeObject(userData);
         FirebaseDatabase.DefaultInstance.
             GetReference("users/" + userId).SetRawJsonValueAsync(json);
+    }
+
+    public bool RegisterUserAttributeChangeValueEvent (string userId, UserAttribute userAttribute,
+        EventHandler<ValueChangedEventArgs> callback)
+    {
+        var dataRef = FirebaseDatabase.DefaultInstance
+            .GetReference("users/" + userId + "/atributos/" + userAttribute.ToString());
+
+        if (dataRef == null)
+        {
+            return false;
+        }
+
+        dataRef.ValueChanged += callback;
+        return true;
+    }
+
+    public bool UnregisterUserAttributeChangeValueEvent (string userId, UserAttribute userAttribute,
+        EventHandler<ValueChangedEventArgs> callback)
+    {
+        var dataRef = FirebaseDatabase.DefaultInstance
+            .GetReference("users/" + userId + "/atributos/" + userAttribute.ToString());
+
+        if (dataRef == null)
+        {
+            return false;
+        }
+
+        dataRef.ValueChanged -= callback;
+        return true;
     }
 
     public void OnLoginButtonClicked (string emailText, string passwordText)
