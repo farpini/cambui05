@@ -5,7 +5,11 @@ public class PlayerHandler : ClientHandler
 {
     public PlayerSO playerData => (PlayerSO)clientData;
 
+    // public int stateValue => playerData.clientState;
+
     public Transform headTransform;
+
+    public Transform sitingTransform;
 
     public static float cameraSpeed = 70f;
 
@@ -16,6 +20,8 @@ public class PlayerHandler : ClientHandler
     public Action<WaypointHandler> OnPlayerGoalWaypointChanged;
     public Action<DeskHandler> OnPlayerDeskChanged;
     public Action<ClientState> OnClientStateChanged;
+
+    public Animator animator;
 
 
     public void Initialize (PlayerSO _playerData)
@@ -107,7 +113,7 @@ public class PlayerHandler : ClientHandler
     {
         Camera.main.transform.SetParent(headTransform);
         Camera.main.transform.localPosition = Vector3.zero;
-        Camera.main.transform.localEulerAngles = new Vector3(10f, 130f, 0f);
+        Camera.main.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
 
         transform.position = waypointHandler.transform.position;
         goalPosition = transform.position;
@@ -128,7 +134,13 @@ public class PlayerHandler : ClientHandler
     }
 
     private void SetNewDesk(DeskHandler deskHandler)
+
     {
+
+        Camera.main.transform.SetParent(sitingTransform);
+        Camera.main.transform.localPosition = Vector3.zero;
+        Camera.main.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
+
         goalPosition = deskHandler.transform.position;
 
         OnPlayerDeskChanged?.Invoke(deskHandler);
