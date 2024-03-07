@@ -23,15 +23,17 @@ public class FirebaseManager : MonoBehaviour
 
     private string currentUserId = "";
 
+    bool flag;
+
     // Eventos
     public Action<string, string, string, GenderType, ClientType> OnNewRegister;
 
     public Action<string> OnLoginSuccess;
     public Action<string> OnLoginMissing;
 
-    public Action<string, bool> OnLoginPrintResult;
-    public Action<string, bool> OnUserRegisterPrintResult;
-    public Action<string, bool> OnAdminRegisterPrintResult;
+    public Action<string, Color> OnLoginPrintResult;
+    public Action<string, Color> OnUserRegisterPrintResult;
+    public Action<string, Color> OnAdminRegisterPrintResult;
 
     public Action<string> OnUserRegisterSuccess;
     public Action<string> OnAdminRegisterSuccess;
@@ -173,7 +175,7 @@ public class FirebaseManager : MonoBehaviour
                     break;
             }
 
-            OnLoginPrintResult?.Invoke(message, false);
+            OnLoginPrintResult?.Invoke(message, Color.red);
         }
         else
         {
@@ -200,19 +202,18 @@ public class FirebaseManager : MonoBehaviour
     {
         if (currentUserId == "")
         {
-            OnUserRegisterPrintResult?.Invoke("UserId unknown", false);
+            OnUserRegisterPrintResult?.Invoke("UserId unknown", Color.red);
         }
         else if (_username == "")
         {
-            OnUserRegisterPrintResult?.Invoke("O nome de usuário está faltando", false);
+            OnUserRegisterPrintResult?.Invoke("O nome de usuário está faltando", Color.red);
         }
         else if (_password != _passwordConfirm)
         {
-            OnUserRegisterPrintResult?.Invoke("A senha está diferente!", false);
+            OnUserRegisterPrintResult?.Invoke("A senha está diferente!", Color.red);
         }
         else 
         {
-            
             SetUserAttribute(currentUserId, UserAttribute.username, _username);
             SetUserAttribute(currentUserId, UserAttribute.genero, _genderType);
 
@@ -221,9 +222,13 @@ public class FirebaseManager : MonoBehaviour
             FirebaseUser user = authAPI.CurrentUser;
             string newPassword = _password;
             if (user != null) {
-                user.UpdatePasswordAsync(newPassword).ContinueWith(task => {
+
+                OnLoginPrintResult?.Invoke("Redefinindo senha...", Color.white);
+
+                var taskStatus = user.UpdatePasswordAsync(newPassword).ContinueWithOnMainThread(task => {
+
                     if (task.IsCanceled)
-                   {
+                    {
                         Debug.LogError("UpdatePasswordAsync foi cancelado.");
                         return;
                     }
@@ -232,18 +237,17 @@ public class FirebaseManager : MonoBehaviour
                         Debug.LogError("UpdatePasswordAsync encontrou um erro: " + task.Exception);
                         return;
                     }
-
-                    Debug.Log("Password atualizado com sucesso.");
                 });
+
+
+                yield return new WaitUntil(predicate: () => taskStatus.IsCompleted);
+                Debug.Log("Password atualizado com sucesso.");
             }
 
-            OnLoginPrintResult?.Invoke("Usuário criado!", true);
+            OnLoginPrintResult?.Invoke("Usuário criado!", Color.green);
             OnUserRegisterSuccess?.Invoke(currentUserId);
         }
-
-        yield return null;
     }
-
 
     private IEnumerator AdminRegister (string _email, string _password, string _matricula, ClientType _clientType)
     {
@@ -276,7 +280,7 @@ public class FirebaseManager : MonoBehaviour
                 break;
             }
 
-            OnAdminRegisterPrintResult?.Invoke(message, false);
+            OnAdminRegisterPrintResult?.Invoke(message, Color.red);
         }
         else
         {
@@ -288,6 +292,8 @@ public class FirebaseManager : MonoBehaviour
 
             if (User != null)
             {
+                OnAdminRegisterPrintResult?.Invoke("Criando usuário...", Color.white);
+
                 //Create a user profile and set the username
                 UserProfile profile = new UserProfile { DisplayName = username };
 
@@ -303,12 +309,12 @@ public class FirebaseManager : MonoBehaviour
                     Debug.LogWarning(message: $"Falha ao registrar tarefa com {ProfileTask.Exception}");
                     FirebaseException firebaseEx = ProfileTask.Exception.GetBaseException() as FirebaseException;
                     AuthError errorCode = (AuthError)firebaseEx.ErrorCode;
-                    OnAdminRegisterPrintResult?.Invoke("Falha na configuração do nome de usuário!", false);
+                    OnAdminRegisterPrintResult?.Invoke("Falha na configuração do nome de usuário!", Color.red);
                 }
                 else
                 {
                     OnNewRegister?.Invoke(User.UserId, username, _matricula, GenderType.none, _clientType);
-                    OnAdminRegisterPrintResult?.Invoke("Usuário criado!", true);
+                    OnAdminRegisterPrintResult?.Invoke("Usuário criado!", Color.green);
                 }
             }
         }

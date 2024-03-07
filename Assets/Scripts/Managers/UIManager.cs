@@ -162,22 +162,22 @@ public class UIManager : MonoBehaviour
         OpenLoginUI();
     }
 
-    private void PrintLoginResult (string loginResult, bool loginSuccess)
+    private void PrintLoginResult (string loginResult, Color color)
     {
         loginResultText.text = loginResult;
-        loginResultText.color = loginSuccess ? Color.green : Color.red;
+        loginResultText.color = color;
     }
 
-    private void PrintUserRegisterResult (string registerResult, bool registerSuccess)
+    private void PrintUserRegisterResult (string registerResult, Color color)
     {
         registerUserResultText.text = registerResult;
-        registerUserResultText.color = registerSuccess ? Color.green : Color.red;
+        registerUserResultText.color = color;
     }
 
-    private void PrintAdminRegisterResult (string registerResult, bool registerSuccess)
+    private void PrintAdminRegisterResult (string registerResult, Color color)
     {
         registerAdminResultText.text = registerResult;
-        registerAdminResultText.color = registerSuccess ? Color.green : Color.red;
+        registerAdminResultText.color = color;
         adminEmailField.text = "";
         adminMatriculaField.text = "";
         adminPasswordField.text = "";
