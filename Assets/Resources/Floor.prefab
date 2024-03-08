@@ -9,12 +9,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5645623107471283610}
+  - component: {fileID: 7023312892010802857}
   - component: {fileID: 7344750755381937796}
   - component: {fileID: 6831299429581018149}
-  - component: {fileID: -8325220416067513913}
   - component: {fileID: -1542016045532781388}
   m_Layer: 6
-  m_Name: Waypoint
+  m_Name: Floor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -35,6 +35,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7023312892010802857
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5037839433182521757}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13be8272cccc4e444b429f1a4c6c82b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  waypointType: 0
+  waypointProfessorAccess: 1
+  waypointStudentAccess: 1
+  waypointIndex: 0
 --- !u!33 &7344750755381937796
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -85,19 +101,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &-8325220416067513913
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5037839433182521757}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3072d7ca59af002418d420ca0fb54798, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  waypointIndex: 0
 --- !u!65 &-1542016045532781388
 BoxCollider:
   m_ObjectHideFlags: 0

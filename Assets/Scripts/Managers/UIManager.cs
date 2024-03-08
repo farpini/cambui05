@@ -90,8 +90,6 @@ public class UIManager : MonoBehaviour
         FirebaseManager.instance.OnLoginPrintResult += PrintLoginResult;
         FirebaseManager.instance.OnUserRegisterPrintResult += PrintUserRegisterResult;
         FirebaseManager.instance.OnAdminRegisterPrintResult += PrintAdminRegisterResult;
-
-        
     }
 
     private void OnDestroy ()
@@ -148,7 +146,7 @@ public class UIManager : MonoBehaviour
     private void OnRegisterButtonClicked ()
     {
         FirebaseManager.instance.OnRegisterButtonClicked(registerUsernameField.text, registerPasswordField.text, 
-            registerPasswordConfirmField.text, toggleMale.isOn ? GenderType.masculino : GenderType.feminino);
+            registerPasswordConfirmField.text, toggleMale.isOn ? ClientGender.masculino : ClientGender.feminino);
     }
 
     private void OnAdminRegisterButtonClicked ()

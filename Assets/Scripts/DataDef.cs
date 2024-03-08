@@ -1,147 +1,123 @@
 using Firebase.Database;
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
+
 [Serializable]
-public abstract class ClientSO : ScriptableObject
+public class WaypointsData : ScriptableObject
 {
-    public UserData userData;
+    public List<int[]> waypointsInRangeList;
+    public List<int[]> desksWaypointsInRangeList;
+    public List<int[]> waypointsDesksInRangeList;
 
-    public string userId;
+    public void Initialize ()
+    {
+        waypointsInRangeList = new List<int[]>
+        {
+            new int[] { 1, 2, 7 }, //0
+            new int[] { 0, 2, 3 }, //1
+            new int[] { 0, 1, 4 }, //2
+            new int[] { 1, 5 }, //3
+            new int[] { 2, 6 }, //4
+            new int[] { 3 }, //5
+            new int[] { 4 }, //6
+            new int[] { 0 }, //7
+        };
 
+        desksWaypointsInRangeList = new List<int[]>
+        {
+            new int[] { 1, 3}, //0
+            new int[] { 3 }, //1
+            new int[] { 5 }, //2
+            new int[] { 5 }, //3
+            new int[] { 1, 3}, //4
+            new int[] { 3 }, //5
+            new int[] { 5 }, //6
+            new int[] { 5 }, //7
+            new int[] { 2, 4 }, //8
+            new int[] { 4 }, //9
+            new int[] { 6 }, //10
+            new int[] { 6 }, //11
+            new int[] { 2, 4 }, //12
+            new int[] { 4 }, //13
+            new int[] { 6 }, //14
+            new int[] { 6 }, //15
+        };
 
-
-    public int avatarId;
-    public string userName;
-    public int actualWaypoint;
-    public int roomId;
-    public ClientState clientState;
-    public ClientType clientRole;
-    public List<string> messages;
-
-    public Action<int> OnChangeWaypoint;
-    public Action<ClientState> OnChangeClientState;
-
+        waypointsDesksInRangeList = new List<int[]>
+        {
+            new int[] { 0, 4},
+            new int[] { 8, 12},
+            new int[] { 0, 1, 4, 5},
+            new int[] { 8, 9, 12, 13},
+            new int[] { 2, 3, 6, 7},
+            new int[] { 10, 11, 14, 15},
+        };
+    }
 }
 
 [Serializable]
-public class PlayerSO : ClientSO
+public class UserRegisterData
 {
+    public string username;
+    public string matricula;
+    public string genero;
+    public string tipo;
 
-
-
+    public UserRegisterData (string _u, string _m, string _g, string _t)
+    {
+        username = _u;
+        matricula = _m;
+        genero = _g;
+        tipo = _t;
+    }
 }
 
 [Serializable]
-public class MateSO : ClientSO
+public class UserRuntimeData
 {
-    public EventHandler<ValueChangedEventArgs> OnWaypointChangedValue;
+    public string waypoint;
+    public string roomId;
+    public string state;
 
-
+    public UserRuntimeData (int _w, int _rid, ClientState _cs)
+    {
+        waypoint = _w.ToString();
+        roomId = _rid.ToString();
+        state = _cs.ToString();
+    }
 }
 
 public enum ClientState
 {
-    Stand = 0,
-    Sit = 1
+    Idle = 0,
+    Walking = 1,
+    Sit = 2
 }
 
-
-
-
-public class UsersManager : MonoBehaviour
+public enum UserRegisterAttribute
 {
-    public GameObject prefabAvatar1;
-    public GameObject prefabAvatar2;
-
-
-
-    public PlayerSO playerData;
-
-    public List<MateSO> matesData;
-
-
-
-    public void OnLoginSuccess (int avatarId)
-    {
-        var obj = Instantiate(new GameObject());
-        var playerHandler = obj.GetComponent<PlayerHandler>();
-
-        playerData = ScriptableObject.CreateInstance<PlayerSO>();
-        playerData.avatarId = 0;
-
-        playerHandler.Initialize((PlayerSO)playerData);
-
-        playerData.OnChangeWaypoint += OnPlayerWaypointChanged;
-        playerData.OnChangeClientState += OnClientStateChanged;
-    }
-
-    public void OnMateLogged (int userId)
-    {
-        foreach (MateSO mate in matesData)
-        {
-            var obj = Instantiate(new GameObject());
-            var mateHandler = obj.GetComponent<MateHandler>();
-
-            ScriptableObject m = ScriptableObject.CreateInstance<MateSO>();
-            m = mate;
-            mate.avatarId = 0;
-
-            mateHandler.Initialize(mate);
-
-            mate.OnChangeWaypoint += OnPlayerWaypointChanged;
-            mate.OnChangeClientState += OnClientStateChanged;
-        }
-    }
-
-    private void OnPlayerWaypointChanged (int waypoint)
-    {
-        FirebaseDatabase.DefaultInstance.GetReference("teste/atributos/waypoint").SetValueAsync(waypoint);
-        // send waypoint to firebase.
-
-
-
-    }
-
-    private void OnClientStateChanged (ClientState clientState)
-    {
-        FirebaseDatabase.DefaultInstance.GetReference("teste/atributos/state").SetValueAsync(clientState);
-    }
+    username, matricula, genero, tipo
 }
 
-
-public class Board : MonoBehaviour
+public enum UserRuntimeAttribute
 {
-    public BoardSO boardData;
-
-
-
+    waypoint, roomId, state
 }
 
-public class BoardSO : ScriptableObject
+public enum ClientGender
 {
-    public string urlVideo;
+    none, masculino, feminino
 }
 
-public class SceneManager
+public enum ClientType
 {
-    public PlayerSO playerData;
+    professor, aluno
+}
 
-
-    public void OpenUIForPlayVideo ()
-    {
-        if (playerData.clientRole == ClientType.professor)
-        {
-            //var boardObject.
-        }
-
-
-    }
-
-    public void ChooseWayPonint (int waypointNumber)
-    {
-        playerData.actualWaypoint = waypointNumber;
-    }
+public enum ClientStatus
+{
+    offline, online
 }

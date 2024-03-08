@@ -18,383 +18,212 @@ public class UserManager : MonoBehaviour
     public PlayerHandler playerHandlerPrefab;
     public MateHandler mateHandlerPrefab;
 
+    public GameObject floorWaypointHolder;
+    public GameObject deskWaypointHolder;
+
     public PlayerHandler playerHandler;
+    private List<MateHandler> mateHandlers;
 
-    public WaypointHandler[] waypoints;
-    public DeskHandler[] desks;
+    private WaypointsData waypointsData;
+    private WaypointHandler[] waypoints;
 
-    public List<int[]> waypointsInRangeList;
-    public List<int[]> desksWaypointsInRangeList;
-    public List<int[]> waypointsDesksInRangeList;
-
-    public UserData userDataGlobal;
-
-    //public UserData userData;
-
-    public PlayerSO playerData;
-    public List<MateSO> matesData;
-
-    bool pendingUserRead = false;
-    string pendingUserJson = "";
-
-    int usersConnected;
-
+    private bool isPlayerInitialized = false;
     
 
     private void Awake ()
     {
-        if (instance == null) instance = this;
-
-        waypointsInRangeList = new List<int[]>
+        if (instance == null)
         {
-            new int[] { 1, 2, 7 }, //0
-            new int[] { 0, 2, 3 }, //1
-            new int[] { 0, 1, 4 }, //2
-            new int[] { 1, 5 }, //3
-            new int[] { 2, 6 }, //4
-            new int[] { 3 }, //5
-            new int[] { 4 }, //6
-            new int[] { 0 }, //7
-        };
-
-        desksWaypointsInRangeList = new List<int[]>
+            instance = this;
+        }
+        else
         {
-            new int[] { 1, 3}, //0
-            new int[] { 3 }, //1
-            new int[] { 5 }, //2
-            new int[] { 5 }, //3
-            new int[] { 1, 3}, //4
-            new int[] { 3 }, //5
-            new int[] { 5 }, //6
-            new int[] { 5 }, //7
-            new int[] { 2, 4 }, //8
-            new int[] { 4 }, //9
-            new int[] { 6 }, //10
-            new int[] { 6 }, //11
-            new int[] { 2, 4 }, //12
-            new int[] { 4 }, //13
-            new int[] { 6 }, //14
-            new int[] { 6 }, //15
-        };
+            Debug.LogError("Cannot have two UsersManager");
+            return;
+        }
 
-        waypointsDesksInRangeList = new List<int[]>
-        {
-            new int[] { 0, 4},
-            new int[] { 8, 12},
-            new int[] { 0, 1, 4, 5},
-            new int[] { 8, 9, 12, 13},
-            new int[] { 2, 3, 6, 7},
-            new int[] { 10, 11, 14, 15},
-        };
+        mateHandlers = new();
     }
 
     private void Start ()
     {
+        LoadWaypointHandlers();
+        CreatePlayerHandler();
+
         //OnLoginSuccess();
         // OnMateLogged((int)Random.Range(0.0f, 100.0f));
         FirebaseManager.instance.OnLoginSuccess += OnLogin;
-        FirebaseManager.instance.OnNewRegister += SetNewUserData;
-
-        if (waypoints.Length != waypointsInRangeList.Count)
-        {
-            Debug.LogError("error");
-            return;
-        }
-
-        for (int i = 0; i < waypoints.Length; i++)
-        {
-            waypoints[i].waypointsInRange = waypointsInRangeList[i];
-        }
-
-        for (int i = 0; i < waypoints.Length; i++)
-        {
-            waypoints[i].waypointsInRange = waypointsInRangeList[i];
-            if (i >= 1 && i <= 6) waypoints[i].desksInRange = waypointsDesksInRangeList[i - 1];
-        }
-
-        for (int i = 0; i < desks.Length; i++)
-        {
-            desks[i].waypointsInRange = desksWaypointsInRangeList[i];
-        }
     }
 
     private void Update ()
     {
-        // testing only
-        if (Input.GetKeyDown(KeyCode.J))
+    }
+
+    private void LoadWaypointHandlers ()
+    {
+        var floorWaypoints = floorWaypointHolder.GetComponentsInChildren<WaypointHandler>();
+        var deskWaypoints = deskWaypointHolder.GetComponentsInChildren<WaypointHandler>();
+        var waypointsCount = floorWaypoints.Length + deskWaypoints.Length;
+
+        waypoints = new WaypointHandler[waypointsCount];
+
+        int waypointIdx = 0;
+
+        for (int i = 0; i < floorWaypoints.Length; i++, waypointIdx++)
         {
-            OnClientStateChanged(playerData.clientState);
-            Debug.Log("OK");
+            waypoints[waypointIdx] = floorWaypoints[i];
+            waypoints[waypointIdx].WaypointIndex = waypointIdx;
         }
 
-        if (matesData.Count < usersConnected - 1)
+        for (int i = 0; i < deskWaypoints.Length; i++, waypointIdx++)
         {
-            //adicionar userAPI na lista mate
+            waypoints[waypointIdx] = deskWaypoints[i];
+            waypoints[waypointIdx].WaypointIndex = waypointIdx;
         }
-        else if (matesData.Count > usersConnected - 1)
-        {
-            //remover userAPI da lista mate
-        }
+
+        Debug.Log("WaypointCount: " + waypointsCount);
+    }
+
+    private void CreatePlayerHandler ()
+    {
+        playerHandler = Instantiate(playerHandlerPrefab);
     }
 
     private void OnLogin (string _userId)
     {
         Debug.Log("Login success");
 
-        // get the user data from the database
-        GetUserData(_userId);
+        playerHandler.SetUserId(_userId);
 
-        // create a player handler for this client
-        CreatePlayerHandler(_userId);
-
-        // notify other clients that this user connected
-        UpdateUsersConnected();
+        // set the player runtime data to the database, it will continue in OnPlayerUserRuntimeDataWrite
+        FirebaseManager.instance.SetUserRuntimeData(_userId, new UserRuntimeData(0, 0, ClientState.Idle), OnPlayerUserRuntimeDataWrite);
     }
 
-    private void GetUserData (string userId)
+    private void OnPlayerUserRuntimeDataWrite (string _userId)
     {
-        FirebaseManager.instance.GetUser(userId, (userDataGlobal) =>
+        // get all users connected
+        StartCoroutine(FirebaseManager.instance.GetAllUsersRuntimeData(OnAllUsersRuntimeDataRead));
+    }
+
+    private void OnAllUsersRuntimeDataRead (Dictionary<string, UserRuntimeData> usersDictionary)
+    {
+        foreach (var client in usersDictionary)
         {
-            Debug.Log("Player data loaded from the database successfuly!");
-        });
+            var clientUserId = client.Key;
+
+            if (clientUserId != playerHandler.UserId)
+            {
+                // only create a mate if it does not exist
+                if (GetMateHandler(clientUserId) == null)
+                {
+                    CreateMateHandler(clientUserId, client.Value);
+                }
+            }
+            else
+            {
+                if (!isPlayerInitialized)
+                {
+                    UpdatePlayerHandler(clientUserId, client.Value);
+                }
+            }
+        }
+
+        FirebaseManager.instance.SetUsersConnectedCount(usersDictionary.Count);
+
+        StartCoroutine(StartTrackingMateLogins());
     }
 
-    private void SetNewUserData (string _userId, string _userName, string _matricula, GenderType _gender, ClientType _type)
+    private IEnumerator StartTrackingMateLogins ()
     {
-        userDataGlobal = new UserData
-        {
-            atributos = new Dictionary<string, object>() 
-            {
-                { "username", _userName},
-                { "matricula", _matricula},
-                { "waypoint", 0 },
-                { "sala", 0 },
-                { "genero", _gender.ToString() },
-                { "tipo", _type.ToString() },
-                { "status", ClientStatus.offline.ToString() },
-                { "state", ClientState.Stand.ToString() } 
-            }
-        };
-
-        FirebaseManager.instance.SetUser(_userId, userDataGlobal);
+        yield return new WaitForSeconds(5f);
+        FirebaseManager.instance.RegisterUsersConnectedCountChangeValueEvent(OnConnectedCountChanged);
     }
 
-    private void UpdateUsersConnected ()
+    public void OnConnectedCountChanged (object sender, ValueChangedEventArgs args)
     {
-        FirebaseDatabase.DefaultInstance.GetReference("newUsersPending").SetValueAsync(playerData.userId);
-
-        /*
-        FirebaseDatabase.DefaultInstance
-        .GetReference("usersConnectedCount")
-        .GetValueAsync().ContinueWith(task =>
-        {
-            if (task.IsFaulted)
-            {
-                Debug.LogError(task);
-            }
-            else if (task.IsCompleted)
-            {
-                DataSnapshot snapshot = task.Result;
-                int value = int.Parse(Convert.ToString(snapshot.Value));
-                value++;
-                FirebaseDatabase.DefaultInstance.GetReference("usersConnectedCount").SetValueAsync(value);
-                FirebaseDatabase.DefaultInstance.GetReference("newUsersPending").SetValueAsync(playerData.userId);
-            }
-        });
-        */
+        FirebaseManager.instance.UnregisterUsersConnectedCountChangeValueEvent(OnConnectedCountChanged);
+        StartCoroutine(FirebaseManager.instance.GetAllUsersRuntimeData(OnAllUsersRuntimeDataRead));
     }
 
-    private void CreateMateHandler (UserData mateUserData, string mateId)
+    private void UpdatePlayerHandler (string _userId, UserRuntimeData _userRuntimeData)
     {
-        //var mateHandler = Instantiate();
+        // it will continue the creation OnPlayerRegisterDataRead
+        StartCoroutine(FirebaseManager.instance.GetUserRegisterData(_userId, OnPlayerRegisterDataRead));
+    }
 
+    private void OnPlayerRegisterDataRead (string userId, UserRegisterData userRegisterData)
+    {
+        playerHandler.SetUserRegisterData(userRegisterData);
+        playerHandler.SetUserRuntimeData(new UserRuntimeData(0, 0, ClientState.Idle));
+        playerHandler.SetPosition(waypoints[0].transform.position);
+        playerHandler.SetCamera(true, true);
+        playerHandler.OnWaypointClicked = OnPlayerWaypointClicked;
+        isPlayerInitialized = true;
+    }
 
+    private void CreateMateHandler (string _userId, UserRuntimeData _userRuntimeData)
+    {
         var mateHandler = Instantiate(mateHandlerPrefab);
+        mateHandler.SetUserId(_userId);
+        mateHandler.SetUserRuntimeData(_userRuntimeData);
+        mateHandlers.Add(mateHandler);
 
-        var mateData = ScriptableObject.CreateInstance<MateSO>();
-        mateData.userData = mateUserData;
-        mateData.userId = mateId;
-
-        mateHandler.Initialize(mateData);
-
-        FirebaseManager.instance.RegisterUserAttributeChangeValueEvent(mateData.userId, UserAttribute.waypoint,
-            mateData.OnWaypointChangedValue);
-
-
-
-        //playerData.OnChangeWaypoint += OnPlayerWaypointChanged;
-        //playerHandler.OnClientStateChanged += OnClientStateChanged;
-        //playerHandler.OnPlayerDeskChanged += OnPlayerDeskChanged;
-        //FirebaseDatabase.DefaultInstance.GetReference("usersConnectedCount").ValueChanged += OnUserConnectedCountChanged;
-        //FirebaseDatabase.DefaultInstance.GetReference("newUsersPending").ValueChanged += OnNewUsersPendingChanged;
-        //playerHandler.OnPlayerGoalWaypointChanged += NewPlayerGoal;
-
+        // it will continue the creation OnPlayerRegisterDataRead
+        StartCoroutine(FirebaseManager.instance.GetUserRegisterData(_userId, OnMateRegisterDataRead));
     }
 
-    private void OnNewUsersPendingChanged (object sender, ValueChangedEventArgs args)
+    private void OnMateRegisterDataRead (string userId, UserRegisterData userRegisterData)
     {
-        string newUserConnectedId = args.Snapshot.Value.ToString();
+        var mateHandler = GetMateHandler(userId);
+        if (mateHandler != null)
+        {
+            mateHandler.SetUserRegisterData(userRegisterData);
+            var waypointIdx = int.Parse(mateHandler.RuntimeData.waypoint);
+            mateHandler.SetPosition(waypoints[waypointIdx].transform.position);
+            mateHandler.OnMateWaypointChanged = OnClientWaypointChanged;
+            FirebaseManager.instance.
+                RegisterUserRuntimeAttributeChangeValueEvent(userId, UserRuntimeAttribute.waypoint, 
+                mateHandler.OnMateWaypointValueChanged);
+        }
+    }
 
-        if (newUserConnectedId == "" || newUserConnectedId == playerData.userId)
+    private void OnPlayerWaypointClicked (WaypointHandler waypointHandler)
+    {
+        FirebaseManager.instance.SetUserRuntimeAttribute(playerHandler.UserId, UserRuntimeAttribute.waypoint, waypointHandler.WaypointIndex);
+        OnClientWaypointChanged(playerHandler.UserId, waypointHandler.WaypointIndex);
+    }
+
+    private void OnClientWaypointChanged (string userId, int waypointValue)
+    {
+        if (userId == "")
         {
             return;
         }
 
-        FirebaseManager.instance.GetUser(newUserConnectedId, (UserData newUserData) =>
+        if (userId == playerHandler.UserId)
         {
-            CreateMateHandler(newUserData, newUserConnectedId);
-        });
-    }
-
-    /*
-    private IEnumerator GetDataFromUserPending ()
-    {
-        yield return new WaitUntil(() => pendingUserRead);
-
-        pendingUserRead = false;
-        UserData newUserData = JsonConvert.DeserializeObject<UserData>(pendingUserJson);
-
-        Debug.LogWarning(newUserData.atributos["username"]);
-    }
-
-    private void OnUserConnectedCountChanged (object sender, ValueChangedEventArgs args)
-    {
-        var userConnectedCount = args.Snapshot.Value;
-        Debug.Log(userConnectedCount);
-    }
-    */
-
-    public void OnMateLogged (int userId)
-    {
-        MateSO mate = null;
-        var obj = new GameObject();
-        var mateHandler = obj.AddComponent<MateHandler>();
-
-        mate = ScriptableObject.CreateInstance<MateSO>();
-        mateHandler.Initialize((MateSO)mate);
-
-        mate.OnChangeWaypoint += OnPlayerWaypointChanged;
-        mate.OnChangeClientState += OnClientStateChanged;
-
-        matesData.Add(mate);
-    }
-
-    public void OnPlayerWaypointChanged (int waypoint)
-    {
-        //FirebaseDatabase.DefaultInstance.GetReference("users/" + playerData.userId + "/atributos/waypoint").SetValueAsync(waypoint);
-        FirebaseManager.instance.SetUserAttribute<int>(playerData.userId, UserAttribute.waypoint, waypoint);
-        // send waypoint to firebase.
-    }
-
-    public void OnClientStateChanged (ClientState clientState)
-    {
-        switch (clientState)
-        {
-            case ClientState.Sit:
-            clientState = ClientState.Stand;
-            break;
-            case ClientState.Stand:
-            clientState = ClientState.Sit;
-            break;
+            playerHandler.SetNewWaypoint(waypoints[waypointValue]);
         }
-        playerData.clientState = clientState;
-        FirebaseManager.instance.SetUserAttribute<ClientState>(playerData.userId, UserAttribute.state, playerData.clientState);
-        //FirebaseDatabase.DefaultInstance.GetReference("users/" + playerData.userId + "/atributos/state").SetValueAsync(clientState.ToString());
-    }
-
-    private void CreatePlayerHandler (string _userId)
-    {
-        playerHandler = Instantiate(playerHandlerPrefab);
-
-        playerHandler.SetCamera(waypoints[0]);
-
-        playerData = ScriptableObject.CreateInstance<PlayerSO>();
-        playerData.userData = userDataGlobal;
-        playerData.avatarId = 0;
-        playerData.userId = _userId;
-
-        playerHandler.Initialize((PlayerSO)playerData);
-
-        playerData.OnChangeWaypoint += OnPlayerWaypointChanged;
-        playerHandler.OnClientStateChanged += OnClientStateChanged;
-        playerHandler.OnPlayerDeskChanged += OnPlayerDeskChanged;
-        //FirebaseDatabase.DefaultInstance.GetReference("usersConnectedCount").ValueChanged += OnUserConnectedCountChanged;
-        FirebaseDatabase.DefaultInstance.GetReference("newUsersPending").ValueChanged += OnNewUsersPendingChanged;
-        playerHandler.OnPlayerGoalWaypointChanged += NewPlayerGoal;
-    }
-
-    private void NewPlayerGoal (WaypointHandler waypointHandler)
-    {
-        for (int i = 0; i < waypoints.Length; i++)
+        else
         {
-            waypoints[i].gameObject.SetActive(false);
-        }
-
-        for (int i = 0; i < desks.Length; i++)
-        {
-            desks[i].gameObject.SetActive(false);
-        }
-
-        for (int i = 0; i < waypointHandler.waypointsInRange.Length; i++)
-        {
-            waypoints[waypointHandler.waypointsInRange[i]].gameObject.SetActive(true);
-        }
-
-        for (int i = 0; i < waypointHandler.desksInRange.Length; i++)
-        {
-            desks[waypointHandler.desksInRange[i]].gameObject.SetActive(true);
-        }
-
-        OnPlayerWaypointChanged(waypointHandler.waypointIndex);
-    }
-
-    private void OnPlayerDeskChanged(DeskHandler deskHandler)
-    {
-        for (int i = 0; i < waypoints.Length; i++)
-        {
-            waypoints[i].gameObject.SetActive(false);
-        }
-
-        for (int i = 0; i < deskHandler.waypointsInRange.Length; i++)
-        {
-            waypoints[deskHandler.waypointsInRange[i]].gameObject.SetActive(true);
-        }
-
-        for (int i = 0; i < desks.Length; i++)
-        {
-            if (i != deskHandler.deskIndex)
+            var mateHandler = GetMateHandler(userId);
+            if (mateHandler != null)
             {
-                desks[i].gameObject.SetActive(false);
+                mateHandler.SetNewWaypoint(waypoints[waypointValue]);
+            }
+        }
+    }
+
+    private MateHandler GetMateHandler (string userId)
+    {
+        for (int i = 0; i < mateHandlers.Count; i++)
+        {
+            if (mateHandlers[i].UserId == userId)
+            {
+                return mateHandlers[i];
             }
         }
 
-        OnPlayerWaypointChanged(deskHandler.deskIndex);
+        return null;
     }
-}
-
-[Serializable]
-public class UserData
-{
-    public Dictionary<string, object> atributos;
-}
-
-public enum UserAttribute
-{
-    genero, sala, tipo, waypoint, username, status, state, matricula
-}
-
-public enum GenderType
-{
-    none, masculino, feminino
-}
-
-
-public enum ClientType
-{
-    professor, aluno
-}
-
-public enum ClientStatus
-{
-    offline, online
 }

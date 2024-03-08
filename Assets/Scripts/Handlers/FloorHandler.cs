@@ -2,12 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DeskHandler : WaypointHandler
+public class FloorHandler : WaypointHandler
 {
-    public int deskIndex;
+    public int floorIndex;
 
     public void Awake ()
     {
-        waypointType = WaypointType.Desk;
+        waypointType = WaypointType.Floor;
     }
 }

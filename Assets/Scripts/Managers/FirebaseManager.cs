@@ -8,8 +8,8 @@ using Firebase.Extensions;
 using TMPro;
 using System.Threading.Tasks;
 using System;
-using UnityEngine.Analytics;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 
 public class FirebaseManager : MonoBehaviour
 {
@@ -23,18 +23,16 @@ public class FirebaseManager : MonoBehaviour
 
     private string currentUserId = "";
 
-    // Eventos
-    public Action<string, string, string, GenderType, ClientType> OnNewRegister;
-
     public Action<string> OnLoginSuccess;
     public Action<string> OnLoginMissing;
+
+    public Action<string> OnUserRegisterSuccess;
+    public Action<string> OnAdminRegisterSuccess;
 
     public Action<string, Color> OnLoginPrintResult;
     public Action<string, Color> OnUserRegisterPrintResult;
     public Action<string, Color> OnAdminRegisterPrintResult;
 
-    public Action<string> OnUserRegisterSuccess;
-    public Action<string> OnAdminRegisterSuccess;
 
     private void Awake()
     {
@@ -66,15 +64,15 @@ public class FirebaseManager : MonoBehaviour
         authAPI = FirebaseAuth.DefaultInstance;
     }
 
-    public void GetUserAttribute (string userId, UserAttribute userAttribute, Action<string> userAttributeCallback)
+    public void GetUserRuntimeAttribute (string userId, UserRuntimeAttribute userAttribute, Action<string> userAttributeCallback)
     {
         FirebaseDatabase.DefaultInstance
-            .GetReference("users/" + userId + "/atributos/" + userAttribute.ToString())
+            .GetReference("usersConnected/" + userId + "/" + userAttribute.ToString())
             .GetValueAsync().ContinueWithOnMainThread(task =>
             {
                 if (task.IsFaulted)
                 {
-                    Debug.LogError(task);
+                    Debug.LogError(task + ": failed to get runtime attribute.");
                 }
                 else if (task.IsCompleted)
                 {
@@ -83,49 +81,54 @@ public class FirebaseManager : MonoBehaviour
             });
     }
 
-    public void SetUserAttribute<T> (string userId, UserAttribute userAttribute, T userValue)
+    public void SetUserRuntimeAttribute<T> (string userId, UserRuntimeAttribute userAttribute, T userValue)
     {
         FirebaseDatabase.DefaultInstance
-            .GetReference("users/" + userId + "/atributos/" + userAttribute.ToString())
-            .SetValueAsync(userValue.ToString());
+            .GetReference("usersConnected/" + userId + "/" + userAttribute.ToString())
+            .SetValueAsync(userValue.ToString()).ContinueWithOnMainThread(task =>
+            {
+                if (task.IsFaulted)
+                {
+                    Debug.LogError(task + ": failed to set runtime attribute");
+                }
+            });
     }
 
-    public void GetUser (string userId, Action<UserData> userCallback)
+    private void GetUserRegisterAttribute (string userId, UserRegisterAttribute userAttribute, Action<string> userAttributeCallback)
     {
-        StartCoroutine(GetUserDictionary(userId, userCallback));
+        FirebaseDatabase.DefaultInstance
+            .GetReference("users/" + userId + "/" + userAttribute.ToString())
+            .GetValueAsync().ContinueWithOnMainThread(task =>
+            {
+                if (task.IsFaulted)
+                {
+                    Debug.LogError(task + ": failed to get runtime attribute.");
+                }
+                else if (task.IsCompleted)
+                {
+                    userAttributeCallback.Invoke(task.Result.Value.ToString());
+                }
+            });
     }
 
-    private IEnumerator GetUserDictionary (string userId, Action<UserData> userCallback)
+    public void SetUserRegisterAttribute<T> (string userId, UserRegisterAttribute userAttribute, T userValue)
     {
-        var serverData = FirebaseDatabase.DefaultInstance.
-            GetReference("users/" + userId).GetValueAsync();
-        yield return new WaitUntil(predicate: () => serverData.IsCompleted);
-
-        DataSnapshot snapshot = serverData.Result;
-        string jsonData = snapshot.GetRawJsonValue();
-
-        if (jsonData != null)
-        {
-            userCallback.Invoke(JsonConvert.DeserializeObject<UserData>(jsonData));
-        }
-        else
-        {
-            Debug.LogError("Cannot find userId " + userId + " in the database");
-        }
+        FirebaseDatabase.DefaultInstance
+            .GetReference("users/" + userId + "/" + userAttribute.ToString())
+            .SetValueAsync(userValue.ToString()).ContinueWithOnMainThread(task =>
+            {
+                if (task.IsFaulted)
+                {
+                    Debug.LogError(task + ": failed to set runtime attribute");
+                }
+            });
     }
 
-    public void SetUser (string userId, UserData userData)
-    {
-        var json = JsonConvert.SerializeObject(userData);
-        FirebaseDatabase.DefaultInstance.
-            GetReference("users/" + userId).SetRawJsonValueAsync(json);
-    }
-
-    public bool RegisterUserAttributeChangeValueEvent (string userId, UserAttribute userAttribute,
+    public bool RegisterUserRuntimeAttributeChangeValueEvent (string userId, UserRuntimeAttribute userAttribute,
         EventHandler<ValueChangedEventArgs> callback)
     {
         var dataRef = FirebaseDatabase.DefaultInstance
-            .GetReference("users/" + userId + "/atributos/" + userAttribute.ToString());
+            .GetReference("usersConnected/" + userId + "/" + userAttribute.ToString());
 
         if (dataRef == null)
         {
@@ -136,11 +139,11 @@ public class FirebaseManager : MonoBehaviour
         return true;
     }
 
-    public bool UnregisterUserAttributeChangeValueEvent (string userId, UserAttribute userAttribute,
+    public bool UnregisterUserRuntimeAttributeChangeValueEvent (string userId, UserRuntimeAttribute userAttribute,
         EventHandler<ValueChangedEventArgs> callback)
     {
         var dataRef = FirebaseDatabase.DefaultInstance
-            .GetReference("users/" + userId + "/atributos/" + userAttribute.ToString());
+            .GetReference("usersConnected/" + userId + "/" + userAttribute.ToString());
 
         if (dataRef == null)
         {
@@ -158,7 +161,7 @@ public class FirebaseManager : MonoBehaviour
     }
 
     public void OnRegisterButtonClicked (string userNameText, string passwordText, string passwordConfirmText, 
-        GenderType userGenderType)
+        ClientGender userGenderType)
     {
         //Call the register coroutine passing the email, password, and username
         StartCoroutine(UserRegister(userNameText, passwordText, passwordConfirmText, userGenderType));
@@ -210,9 +213,9 @@ public class FirebaseManager : MonoBehaviour
             userAPI = LoginTask.Result.User;
             currentUserId = userAPI.UserId;
 
-            GetUserAttribute (currentUserId, UserAttribute.genero, (string genero) =>
+            GetUserRegisterAttribute (currentUserId, UserRegisterAttribute.genero, (string genero) =>
             {
-                if (genero == GenderType.none.ToString())
+                if (genero == ClientGender.none.ToString())
                 {
                     OnLoginMissing?.Invoke(currentUserId);
                 }
@@ -226,7 +229,7 @@ public class FirebaseManager : MonoBehaviour
         }
     }
 
-    private IEnumerator UserRegister (string _username, string _password, string _passwordConfirm, GenderType _genderType)
+    private IEnumerator UserRegister (string _username, string _password, string _passwordConfirm, ClientGender _genderType)
     {
         if (currentUserId == "")
         {
@@ -242,8 +245,8 @@ public class FirebaseManager : MonoBehaviour
         }
         else 
         {
-            SetUserAttribute(currentUserId, UserAttribute.username, _username);
-            SetUserAttribute(currentUserId, UserAttribute.genero, _genderType);
+            SetUserRegisterAttribute(currentUserId, UserRegisterAttribute.username, _username);
+            SetUserRegisterAttribute(currentUserId, UserRegisterAttribute.genero, _genderType);
 
             // change the password in the authAPI here...
 
@@ -341,10 +344,133 @@ public class FirebaseManager : MonoBehaviour
                 }
                 else
                 {
-                    OnNewRegister?.Invoke(User.UserId, username, _matricula, GenderType.none, _clientType);
-                    OnAdminRegisterPrintResult?.Invoke("Usuário criado!", Color.green);
+                    CreateNewUser(User.UserId, username, _matricula, ClientGender.none, _clientType);
                 }
             }
         }
+    }
+
+    private void CreateNewUser (string _userId, string _userName, string _matricula, ClientGender _clientGender, ClientType _clientType)
+    {
+        var newUserRegisterData = new UserRegisterData(_userName, _matricula, _clientGender.ToString(), _clientType.ToString());
+
+        var json = JsonConvert.SerializeObject(newUserRegisterData);
+
+        FirebaseDatabase.DefaultInstance
+            .GetReference("users/" + _userId + "/")
+            .SetRawJsonValueAsync(json).ContinueWithOnMainThread(task =>
+            {
+                if (task.IsFaulted)
+                {
+                    Debug.LogError(task + ": failed to set new user to the database");
+                }
+                else if (task.IsCompleted)
+                {
+                    OnAdminRegisterPrintResult?.Invoke("Usuário criado!", Color.green);
+                }
+            });
+    }
+
+    public IEnumerator GetUserRegisterData (string _userId, Action<string, UserRegisterData> _userRegisterDataCallback)
+    {
+        var task = FirebaseDatabase.DefaultInstance
+           .GetReference("users/" + _userId + "/")
+           .GetValueAsync();
+
+        yield return new WaitUntil(predicate: () => task.IsCompleted);
+
+        DataSnapshot snapshot = task.Result;
+        string json = snapshot.GetRawJsonValue();
+        _userRegisterDataCallback.Invoke(_userId, JsonConvert.DeserializeObject<UserRegisterData>(json));
+    }
+
+    public IEnumerator GetAllUsersRuntimeData (Action<Dictionary<string, UserRuntimeData>> _usersRuntimeData)
+    {
+        var task = FirebaseDatabase.DefaultInstance
+           .GetReference("usersConnected/")
+           .GetValueAsync();
+
+        yield return new WaitUntil(predicate: () => task.IsCompleted);
+
+        DataSnapshot snapshot = task.Result;
+        string json = snapshot.GetRawJsonValue();
+        _usersRuntimeData.Invoke(JsonConvert.DeserializeObject<Dictionary<string, UserRuntimeData>>(json));
+    }
+
+    public void SetUserRuntimeData (string _userId, UserRuntimeData _userRuntimeData, Action<string> _userRuntimeDataCallback)
+    {
+        var json = JsonConvert.SerializeObject(_userRuntimeData);
+
+        FirebaseDatabase.DefaultInstance
+           .GetReference("usersConnected/" + _userId + "/")
+           .SetRawJsonValueAsync(json).ContinueWithOnMainThread(task =>
+           {
+               if (task.IsFaulted)
+               {
+                   Debug.LogError(task + ": failed to set the user runtime data");
+               }
+               else if (task.IsCompleted)
+               {
+                   _userRuntimeDataCallback.Invoke(_userId);
+               }
+           });
+    }
+
+    public void GetUsersConnectedCount (Action<int> usersConnectedCountCallback)
+    {
+        FirebaseDatabase.DefaultInstance
+            .GetReference("usersConnectedCount")
+            .GetValueAsync().ContinueWithOnMainThread(task =>
+            {
+                if (task.IsFaulted)
+                {
+                    Debug.LogError(task + ": failed to get runtime attribute.");
+                }
+                else if (task.IsCompleted)
+                {
+                    usersConnectedCountCallback.Invoke(int.Parse(task.Result.Value.ToString()));
+                }
+            });
+    }
+
+    public void SetUsersConnectedCount (int count)
+    {
+        FirebaseDatabase.DefaultInstance
+            .GetReference("usersConnectedCount")
+            .SetValueAsync(count.ToString()).ContinueWithOnMainThread(task =>
+            {
+                if (task.IsFaulted)
+                {
+                    Debug.LogError(task + ": failed to set runtime attribute");
+                }
+            });
+    }
+
+    public bool RegisterUsersConnectedCountChangeValueEvent (EventHandler<ValueChangedEventArgs> callback)
+    {
+        var dataRef = FirebaseDatabase.DefaultInstance
+            .GetReference("usersConnectedCount");
+
+        if (dataRef == null)
+        {
+            return false;
+        }
+
+        dataRef.ValueChanged += callback;
+        return true;
+    }
+
+    public bool UnregisterUsersConnectedCountChangeValueEvent (EventHandler<ValueChangedEventArgs> callback)
+    {
+        var dataRef = FirebaseDatabase.DefaultInstance
+            .GetReference("usersConnectedCount");
+
+        if (dataRef == null)
+        {
+            return false;
+        }
+
+        dataRef.ValueChanged -= callback;
+        return true;
     }
 }
