@@ -221,8 +221,8 @@ public class FirebaseManager : MonoBehaviour
                 }
                 else
                 {
-                    var resultOutputMessage = "O usuário " + userAPI.DisplayName + " logou com sucesso.";
-                    Debug.Log(resultOutputMessage);
+                    //var resultOutputMessage = "O usuário " + userAPI.DisplayName + " logou com sucesso.";
+                    //Debug.Log(resultOutputMessage);
                     OnLoginSuccess?.Invoke(currentUserId);
                 }
             });

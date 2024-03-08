@@ -12,6 +12,11 @@ public class MateHandler : ClientHandler
 
     public void Update ()
     {
+        if (!isClientInitialized)
+        {
+            return;
+        }
+
         UpdatePosition();
     }
 

@@ -27,7 +27,7 @@ public class UserManager : MonoBehaviour
     private WaypointsData waypointsData;
     private WaypointHandler[] waypoints;
 
-    private bool isPlayerInitialized = false;
+    private int currentUsersConnectedCount = 0;
     
 
     private void Awake ()
@@ -50,8 +50,6 @@ public class UserManager : MonoBehaviour
         LoadWaypointHandlers();
         CreatePlayerHandler();
 
-        //OnLoginSuccess();
-        // OnMateLogged((int)Random.Range(0.0f, 100.0f));
         FirebaseManager.instance.OnLoginSuccess += OnLogin;
     }
 
@@ -81,7 +79,7 @@ public class UserManager : MonoBehaviour
             waypoints[waypointIdx].WaypointIndex = waypointIdx;
         }
 
-        Debug.Log("WaypointCount: " + waypointsCount);
+        //Debug.Log("WaypointCount: " + waypointsCount);
     }
 
     private void CreatePlayerHandler ()
@@ -91,7 +89,7 @@ public class UserManager : MonoBehaviour
 
     private void OnLogin (string _userId)
     {
-        Debug.Log("Login success");
+        Debug.Log("Login success: " + _userId);
 
         playerHandler.SetUserId(_userId);
 
@@ -107,9 +105,17 @@ public class UserManager : MonoBehaviour
 
     private void OnAllUsersRuntimeDataRead (Dictionary<string, UserRuntimeData> usersDictionary)
     {
+        Debug.LogWarning("OnAllUsersRuntimeDataRead EXECUTED");
+
         foreach (var client in usersDictionary)
         {
             var clientUserId = client.Key;
+
+            if (clientUserId == "")
+            {
+                Debug.LogError("ClientUserId is null.");
+                continue;
+            }
 
             if (clientUserId != playerHandler.UserId)
             {
@@ -121,14 +127,17 @@ public class UserManager : MonoBehaviour
             }
             else
             {
-                if (!isPlayerInitialized)
+                if (!playerHandler.IsClientInitialized)
                 {
-                    UpdatePlayerHandler(clientUserId, client.Value);
+                    var playerRuntimeDataStart = new UserRuntimeData(0, 0, ClientState.Idle);
+                    UpdatePlayerHandler(clientUserId, playerRuntimeDataStart);
                 }
             }
         }
 
-        FirebaseManager.instance.SetUsersConnectedCount(usersDictionary.Count);
+        currentUsersConnectedCount = usersDictionary.Count;
+
+        FirebaseManager.instance.SetUsersConnectedCount(currentUsersConnectedCount);
 
         StartCoroutine(StartTrackingMateLogins());
     }
@@ -142,11 +151,20 @@ public class UserManager : MonoBehaviour
     public void OnConnectedCountChanged (object sender, ValueChangedEventArgs args)
     {
         FirebaseManager.instance.UnregisterUsersConnectedCountChangeValueEvent(OnConnectedCountChanged);
-        StartCoroutine(FirebaseManager.instance.GetAllUsersRuntimeData(OnAllUsersRuntimeDataRead));
+        int usersConnectedCountRead = int.Parse(args.Snapshot.Value.ToString());
+
+        if (usersConnectedCountRead != currentUsersConnectedCount)
+        {
+            Debug.Log("UsersConnectedCountChanged from: " + currentUsersConnectedCount + " to " + usersConnectedCountRead);
+            currentUsersConnectedCount = usersConnectedCountRead;
+            StartCoroutine(FirebaseManager.instance.GetAllUsersRuntimeData(OnAllUsersRuntimeDataRead));
+        }
     }
 
     private void UpdatePlayerHandler (string _userId, UserRuntimeData _userRuntimeData)
     {
+        playerHandler.SetUserRuntimeData(_userRuntimeData);
+
         // it will continue the creation OnPlayerRegisterDataRead
         StartCoroutine(FirebaseManager.instance.GetUserRegisterData(_userId, OnPlayerRegisterDataRead));
     }
@@ -154,11 +172,16 @@ public class UserManager : MonoBehaviour
     private void OnPlayerRegisterDataRead (string userId, UserRegisterData userRegisterData)
     {
         playerHandler.SetUserRegisterData(userRegisterData);
-        playerHandler.SetUserRuntimeData(new UserRuntimeData(0, 0, ClientState.Idle));
         playerHandler.SetPosition(waypoints[0].transform.position);
         playerHandler.SetCamera(true, true);
         playerHandler.OnWaypointClicked = OnPlayerWaypointClicked;
-        isPlayerInitialized = true;
+        playerHandler.InitializeClient();
+    }
+
+    private void OnPlayerWaypointClicked (WaypointHandler waypointHandler)
+    {
+        FirebaseManager.instance.SetUserRuntimeAttribute(playerHandler.UserId, UserRuntimeAttribute.waypoint, waypointHandler.WaypointIndex);
+        OnClientWaypointChanged(playerHandler.UserId, waypointHandler.WaypointIndex);
     }
 
     private void CreateMateHandler (string _userId, UserRuntimeData _userRuntimeData)
@@ -168,7 +191,7 @@ public class UserManager : MonoBehaviour
         mateHandler.SetUserRuntimeData(_userRuntimeData);
         mateHandlers.Add(mateHandler);
 
-        // it will continue the creation OnPlayerRegisterDataRead
+        // it will continue the creation OnMateRegisterDataRead
         StartCoroutine(FirebaseManager.instance.GetUserRegisterData(_userId, OnMateRegisterDataRead));
     }
 
@@ -181,16 +204,24 @@ public class UserManager : MonoBehaviour
             var waypointIdx = int.Parse(mateHandler.RuntimeData.waypoint);
             mateHandler.SetPosition(waypoints[waypointIdx].transform.position);
             mateHandler.OnMateWaypointChanged = OnClientWaypointChanged;
+            mateHandler.InitializeClient();
             FirebaseManager.instance.
                 RegisterUserRuntimeAttributeChangeValueEvent(userId, UserRuntimeAttribute.waypoint, 
                 mateHandler.OnMateWaypointValueChanged);
         }
     }
 
-    private void OnPlayerWaypointClicked (WaypointHandler waypointHandler)
+    private MateHandler GetMateHandler (string userId)
     {
-        FirebaseManager.instance.SetUserRuntimeAttribute(playerHandler.UserId, UserRuntimeAttribute.waypoint, waypointHandler.WaypointIndex);
-        OnClientWaypointChanged(playerHandler.UserId, waypointHandler.WaypointIndex);
+        for (int i = 0; i < mateHandlers.Count; i++)
+        {
+            if (mateHandlers[i].UserId == userId)
+            {
+                return mateHandlers[i];
+            }
+        }
+
+        return null;
     }
 
     private void OnClientWaypointChanged (string userId, int waypointValue)
@@ -212,18 +243,5 @@ public class UserManager : MonoBehaviour
                 mateHandler.SetNewWaypoint(waypoints[waypointValue]);
             }
         }
-    }
-
-    private MateHandler GetMateHandler (string userId)
-    {
-        for (int i = 0; i < mateHandlers.Count; i++)
-        {
-            if (mateHandlers[i].UserId == userId)
-            {
-                return mateHandlers[i];
-            }
-        }
-
-        return null;
     }
 }

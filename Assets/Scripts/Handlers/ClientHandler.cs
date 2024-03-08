@@ -13,9 +13,12 @@ public abstract class ClientHandler : MonoBehaviour
     protected UserRegisterData registerData;
     protected UserRuntimeData runtimeData;
 
+    protected bool isClientInitialized = false;
+
     public string UserId => userId;
     public UserRegisterData RegisterData => registerData;
     public UserRuntimeData RuntimeData => runtimeData;
+    public bool IsClientInitialized => isClientInitialized;
 
 
     public void SetUserId (string _userId)
@@ -32,6 +35,11 @@ public abstract class ClientHandler : MonoBehaviour
     public void SetUserRuntimeData (UserRuntimeData _runtimeData)
     {
         runtimeData = _runtimeData;
+    }
+
+    public virtual void InitializeClient ()
+    {
+        isClientInitialized = true;
     }
 
     public void SetPosition (Vector3 _position)

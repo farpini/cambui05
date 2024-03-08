@@ -11,14 +11,14 @@ public class PlayerHandler : ClientHandler
 
     public Action<WaypointHandler> OnWaypointClicked;
 
-
-    //public Action<WaypointHandler> OnPlayerGoalWaypointChanged;
-    //public Action<DeskHandler> OnPlayerDeskChanged;
-    //public Action<ClientState> OnClientStateChanged;
-
     
     public void Update ()
     {
+        if (!isClientInitialized)
+        {
+            return;
+        }
+
         CheckWaypointClick();
         CheckMovement();
         UpdatePosition();
