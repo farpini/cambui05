@@ -20,6 +20,11 @@ public abstract class ClientHandler : MonoBehaviour
     public UserRuntimeData RuntimeData => runtimeData;
     public bool IsClientInitialized => isClientInitialized;
 
+    private void Start()
+    {
+        animator = transform.GetComponentInChildren<Animator>();
+        //animator.SetInteger("stateValue", 0);
+    }
 
     public void SetUserId (string _userId)
     {
@@ -54,6 +59,7 @@ public abstract class ClientHandler : MonoBehaviour
 
         var currentPosition = transform.position;
         var targetPosition = currentWaypoint.transform.position;
+        //animator.SetInteger("stateValue", 1);
 
         if (!IsCloseEnoughToTarget(currentPosition, targetPosition))
         {
@@ -99,6 +105,22 @@ public abstract class ClientHandler : MonoBehaviour
         }
     }
 
+    protected void ChangeAnimator()
+    {
+        switch (runtimeData.state)
+        {
+            case "Idle":
+                animator.SetInteger("stateValue", 0);
+                break;
+            case "Walking":
+                animator.SetInteger("stateValue", 1);
+                break;
+            case "Sit":
+                animator.SetInteger("stateValue", 2);
+                break;
+        }
+    }
+
     private bool IsCloseEnoughToTarget (Vector3 currentPosition, Vector3 targetPosition)
     {
         return Vector3.Distance(currentPosition, targetPosition) < 0.1f;
@@ -108,11 +130,13 @@ public abstract class ClientHandler : MonoBehaviour
     {
         if (currentWaypoint.WaypointType == WaypointType.Desk)
         {
+            //animator.SetInteger("stateValue", 2);
             runtimeData.state = ClientState.Sit.ToString();
             SetCamera(false);
         }
         else if (currentWaypoint.WaypointType == WaypointType.Floor)
         {
+            //animator.SetInteger("stateValue", 0);
             runtimeData.state = ClientState.Idle.ToString();
             SetCamera(true);
         }

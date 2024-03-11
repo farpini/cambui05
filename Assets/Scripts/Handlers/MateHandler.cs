@@ -18,6 +18,7 @@ public class MateHandler : ClientHandler
         }
 
         UpdatePosition();
+        ChangeAnimator();   
     }
 
     public void OnMateWaypointValueChanged (object sender, ValueChangedEventArgs args)

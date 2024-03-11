@@ -22,6 +22,7 @@ public class PlayerHandler : ClientHandler
         CheckWaypointClick();
         CheckMovement();
         UpdatePosition();
+        ChangeAnimator();
     }
 
     public override void SetCamera (bool isStand, bool initRotation = false)
