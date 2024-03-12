@@ -11,7 +11,6 @@ public class PlayerHandler : ClientHandler
 
     public Action<WaypointHandler> OnWaypointClicked;
 
-    
     public void Update ()
     {
         if (!isClientInitialized)

@@ -9,7 +9,6 @@ public class MateHandler : ClientHandler
 
     public Action<string, int> OnMateWaypointChanged;
 
-
     public void Update ()
     {
         if (!isClientInitialized)

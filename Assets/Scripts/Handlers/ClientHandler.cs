@@ -22,7 +22,7 @@ public abstract class ClientHandler : MonoBehaviour
 
     private void Start()
     {
-        animator = transform.GetComponentInChildren<Animator>();
+        
         //animator.SetInteger("stateValue", 0);
     }
 
@@ -45,6 +45,21 @@ public abstract class ClientHandler : MonoBehaviour
     public virtual void InitializeClient ()
     {
         isClientInitialized = true;
+    }
+
+    public void ChangeModel()
+    {
+        switch (registerData.genero)
+        {
+            case "masculino":
+                transform.GetChild(0).GetChild(3).gameObject.SetActive(true);
+                animator = transform.GetComponentInChildren<Animator>(); 
+                break;
+            case "feminino":
+                transform.GetChild(0).GetChild(2).gameObject.SetActive(true);
+                animator = transform.GetComponentInChildren<Animator>();
+                break;
+        }
     }
 
     public void SetPosition (Vector3 _position)

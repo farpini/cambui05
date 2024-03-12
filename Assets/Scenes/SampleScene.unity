@@ -35490,7 +35490,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerHandlerPrefab: {fileID: 1220548723969342733, guid: 051aaf8a3886c9f4980285ac6968af26,
     type: 3}
-  mateHandlerPrefab: {fileID: 2700265115944868948, guid: 9c4b2666e8fed8047aa34c532227a498,
+  mateHandlerPrefab: {fileID: 2700265115944868948, guid: 160bc5fc7e346bd42b1c39972e2d8350,
     type: 3}
   floorWaypointHolder: {fileID: 1746182420}
   deskWaypointHolder: {fileID: 1799045603}

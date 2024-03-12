@@ -172,6 +172,7 @@ public class UserManager : MonoBehaviour
     private void OnPlayerRegisterDataRead (string userId, UserRegisterData userRegisterData)
     {
         playerHandler.SetUserRegisterData(userRegisterData);
+        playerHandler.ChangeModel();
         playerHandler.SetPosition(waypoints[0].transform.position);
         playerHandler.SetCamera(true, true);
         playerHandler.OnWaypointClicked = OnPlayerWaypointClicked;
@@ -202,6 +203,7 @@ public class UserManager : MonoBehaviour
         {
             mateHandler.SetUserRegisterData(userRegisterData);
             var waypointIdx = int.Parse(mateHandler.RuntimeData.waypoint);
+            mateHandler.ChangeModel();
             mateHandler.SetPosition(waypoints[waypointIdx].transform.position);
             mateHandler.OnMateWaypointChanged = OnClientWaypointChanged;
             mateHandler.InitializeClient();
