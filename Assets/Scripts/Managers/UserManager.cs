@@ -55,6 +55,7 @@ public class UserManager : MonoBehaviour
 
     private void Update ()
     {
+        UpdateMatesLabel();
     }
 
     private void LoadWaypointHandlers ()
@@ -244,6 +245,16 @@ public class UserManager : MonoBehaviour
             {
                 mateHandler.SetNewWaypoint(waypoints[waypointValue]);
             }
+        }
+    }
+
+    private void UpdateMatesLabel ()
+    {
+        var playerPosition = playerHandler.transform.position;
+
+        for (int i = 0; i < mateHandlers.Count; i++)
+        {
+            mateHandlers[i].UpdateMateLabel(playerPosition);
         }
     }
 }

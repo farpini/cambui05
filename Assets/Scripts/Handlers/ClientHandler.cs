@@ -4,6 +4,8 @@ using UnityEngine;
 public abstract class ClientHandler : MonoBehaviour
 {
     protected static float movementSpeed = 0.01f;
+    protected static Vector3 sitFixedDirection = Vector3.forward;
+    protected static Vector3 professorFixedDirection = Vector3.back;
 
     protected Animator animator;
 
@@ -74,12 +76,15 @@ public abstract class ClientHandler : MonoBehaviour
 
         var currentPosition = transform.position;
         var targetPosition = currentWaypoint.transform.position;
-        //animator.SetInteger("stateValue", 1);
+
+        var direction = (targetPosition - currentPosition).normalized;
+        UpdateMovementLookRotation(direction);
 
         if (!IsCloseEnoughToTarget(currentPosition, targetPosition))
         {
             // set state to moving
             runtimeData.state = ClientState.Walking.ToString();
+            
         }
         else
         {
@@ -147,12 +152,25 @@ public abstract class ClientHandler : MonoBehaviour
         {
             //animator.SetInteger("stateValue", 2);
             runtimeData.state = ClientState.Sit.ToString();
+
+            // set the direction to the class board
+            transform.rotation = Quaternion.LookRotation(sitFixedDirection);
+
             SetCamera(false);
         }
         else if (currentWaypoint.WaypointType == WaypointType.Floor)
         {
             //animator.SetInteger("stateValue", 0);
+
             runtimeData.state = ClientState.Idle.ToString();
+
+            // this is temporary, waypoint index (1) represents the professor position to start the class
+            // so set it's direction to be straight to the students
+            if (currentWaypoint.WaypointIndex == 1)
+            {
+                transform.rotation = Quaternion.LookRotation(professorFixedDirection);
+            }
+
             SetCamera(true);
         }
     }
@@ -162,6 +180,10 @@ public abstract class ClientHandler : MonoBehaviour
     }
 
     public virtual void SetUsernameLabel ()
+    {
+    }
+
+    protected virtual void UpdateMovementLookRotation (Vector3 direction)
     {
     }
 }
