@@ -9,8 +9,6 @@ public class PlayerHandler : ClientHandler
     public Transform headTransform;
     public Transform sitingTransform;
 
-    public Action<WaypointHandler> OnWaypointClicked;
-
     public void Update ()
     {
         if (!isClientInitialized)

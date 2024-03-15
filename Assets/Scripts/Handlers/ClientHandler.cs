@@ -24,6 +24,7 @@ public abstract class ClientHandler : MonoBehaviour
     public bool IsClientInitialized => isClientInitialized;
 
     public Action<int> OnRoomChange;
+    public Action<WaypointHandler> OnWaypointClicked;
 
     private void Start()
     {
@@ -191,6 +192,7 @@ public abstract class ClientHandler : MonoBehaviour
         currentWaypoint = waypoint;
         runtimeData.state = ClientState.Idle.ToString();
         SetPosition(waypoint.transform.position);
+        OnWaypointClicked?.Invoke(waypoint);
     }  
 
     public virtual void SetCamera (bool isStand, bool initRotation = false)
