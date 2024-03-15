@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 
@@ -21,6 +22,8 @@ public abstract class ClientHandler : MonoBehaviour
     public UserRegisterData RegisterData => registerData;
     public UserRuntimeData RuntimeData => runtimeData;
     public bool IsClientInitialized => isClientInitialized;
+
+    public Action<int> OnRoomChange;
 
     private void Start()
     {
@@ -173,7 +176,22 @@ public abstract class ClientHandler : MonoBehaviour
 
             SetCamera(true);
         }
+        else if (currentWaypoint.WaypointType == WaypointType.Door)
+        {
+            Debug.Log("Porta");
+            FirebaseManager.instance.SetUserRuntimeAttribute(userId, UserRuntimeAttribute.roomId, currentWaypoint.GetComponent<DoorHandler>().roomIndex.ToString());
+            //UserManager.instance.roomId = int.Parse(runtimeData.roomId);
+            OnRoomChange?.Invoke(currentWaypoint.GetComponent<DoorHandler>().roomIndex);
+            //UserManager.instance.LoadWaypointHandlers();
+        }
     }
+
+    public void SetNewRoomLocation(WaypointHandler waypoint) 
+    { 
+        currentWaypoint = waypoint;
+        runtimeData.state = ClientState.Idle.ToString();
+        SetPosition(waypoint.transform.position);
+    }  
 
     public virtual void SetCamera (bool isStand, bool initRotation = false)
     {

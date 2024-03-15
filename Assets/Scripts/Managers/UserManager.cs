@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.Remoting.Messaging;
 using System.Runtime.Remoting.Metadata;
 using Unity.Mathematics;
 using UnityEngine;
@@ -18,19 +19,26 @@ public class UserManager : MonoBehaviour
     public PlayerHandler playerHandlerPrefab;
     public MateHandler mateHandlerPrefab;
 
-    public GameObject floorWaypointHolder;
-    public GameObject deskWaypointHolder;
+    public List<GameObject> floorWaypointHolder;
+    public List<GameObject> deskWaypointHolder;
+    public List<GameObject> doorWaypointHolder;
 
     public PlayerHandler playerHandler;
     private List<MateHandler> mateHandlers;
 
     private WaypointsData waypointsData;
-    private WaypointHandler[] waypoints;
+    public WaypointHandler[] waypoints;
 
     private int currentUsersConnectedCount = 0;
-    
 
-    private void Awake ()
+    private bool registeredToWaypointChanged = false;
+    private bool registeredToLoggedFlagChanged = false;
+
+    private bool checkingClientLogged = false;
+    private bool hasClientLogged = false;
+
+
+    private void Awake()
     {
         if (instance == null)
         {
@@ -45,24 +53,37 @@ public class UserManager : MonoBehaviour
         mateHandlers = new();
     }
 
-    private void Start ()
+    private void Start()
     {
-        LoadWaypointHandlers();
+        LoadWaypointHandlers(0);
         CreatePlayerHandler();
 
         FirebaseManager.instance.OnLoginSuccess += OnLogin;
     }
 
-    private void Update ()
+    private void Update()
     {
         UpdateMatesLabel();
+
+        //Debug.LogWarning("RoomId: " + roomId);
+
+        //if (playerHandler.RuntimeData.roomId != null) roomId = int.Parse(playerHandler.RuntimeData.roomId);
     }
 
-    private void LoadWaypointHandlers ()
+    private void OnDestroy()
     {
-        var floorWaypoints = floorWaypointHolder.GetComponentsInChildren<WaypointHandler>();
-        var deskWaypoints = deskWaypointHolder.GetComponentsInChildren<WaypointHandler>();
-        var waypointsCount = floorWaypoints.Length + deskWaypoints.Length;
+        if (registeredToLoggedFlagChanged)
+        {
+            FirebaseManager.instance.UnregisterUsersLoggedFlagChangeValueEvent(OnLoggedFlagChanged);
+        }
+    }
+
+    private void LoadWaypointHandlers(int index)
+    {
+        var floorWaypoints = floorWaypointHolder[index].GetComponentsInChildren<WaypointHandler>();
+        var deskWaypoints = deskWaypointHolder[index].GetComponentsInChildren<WaypointHandler>();
+        var doorWaypoints = doorWaypointHolder[index].GetComponentsInChildren<WaypointHandler>();
+        var waypointsCount = floorWaypoints.Length + deskWaypoints.Length + doorWaypoints.Length;
 
         waypoints = new WaypointHandler[waypointsCount];
 
@@ -80,31 +101,68 @@ public class UserManager : MonoBehaviour
             waypoints[waypointIdx].WaypointIndex = waypointIdx;
         }
 
+        for (int i = 0; i < doorWaypoints.Length; i++, waypointIdx++)
+        {
+            waypoints[waypointIdx] = doorWaypoints[i];
+            waypoints[waypointIdx].WaypointIndex = waypointIdx;
+        }
+
         //Debug.Log("WaypointCount: " + waypointsCount);
     }
 
-    private void CreatePlayerHandler ()
+    private void CreatePlayerHandler()
     {
         playerHandler = Instantiate(playerHandlerPrefab);
     }
 
-    private void OnLogin (string _userId)
+    private void OnLogin(string _userId)
     {
         Debug.Log("Login success: " + _userId);
 
         playerHandler.SetUserId(_userId);
 
+        checkingClientLogged = true;
+
+        FirebaseManager.instance.RegisterUsersLoggedFlagChangeValueEvent(OnLoggedFlagChanged);
+
+        registeredToLoggedFlagChanged = true;
+
+        StartCoroutine(PostLoginWaitForLoggedFlag(_userId));
+    }
+
+    private IEnumerator PostLoginWaitForLoggedFlag(string _userId)
+    {
+        // set to true so we can force the value to change when set to false after 0.5f
+        FirebaseManager.instance.SetUsersLoggedFlag(true);
+
+        yield return new WaitForSeconds(0.5f);
+
+        hasClientLogged = false;
+
+        FirebaseManager.instance.SetUsersLoggedFlag(false);
+
+        //yield return new WaitUntilForSeconds(() => hasClientLogged, 2f);
+        yield return new WaitForSeconds(2f);
+
+        checkingClientLogged = false;
+
+        // it needs to clear the users connected data (no client responds to the flag)
+        if (!hasClientLogged)
+        {
+            Debug.Log("IT NEEDS TO CLEAR!!!");
+        }
+
         // set the player runtime data to the database, it will continue in OnPlayerUserRuntimeDataWrite
         FirebaseManager.instance.SetUserRuntimeData(_userId, new UserRuntimeData(0, 0, ClientState.Idle), OnPlayerUserRuntimeDataWrite);
     }
 
-    private void OnPlayerUserRuntimeDataWrite (string _userId)
+    private void OnPlayerUserRuntimeDataWrite(string _userId)
     {
         // get all users connected
         StartCoroutine(FirebaseManager.instance.GetAllUsersRuntimeData(OnAllUsersRuntimeDataRead));
     }
 
-    private void OnAllUsersRuntimeDataRead (Dictionary<string, UserRuntimeData> usersDictionary)
+    private void OnAllUsersRuntimeDataRead(Dictionary<string, UserRuntimeData> usersDictionary)
     {
         Debug.LogWarning("OnAllUsersRuntimeDataRead EXECUTED");
 
@@ -143,13 +201,13 @@ public class UserManager : MonoBehaviour
         StartCoroutine(StartTrackingMateLogins());
     }
 
-    private IEnumerator StartTrackingMateLogins ()
+    private IEnumerator StartTrackingMateLogins()
     {
         yield return new WaitForSeconds(5f);
         FirebaseManager.instance.RegisterUsersConnectedCountChangeValueEvent(OnConnectedCountChanged);
     }
 
-    public void OnConnectedCountChanged (object sender, ValueChangedEventArgs args)
+    public void OnConnectedCountChanged(object sender, ValueChangedEventArgs args)
     {
         FirebaseManager.instance.UnregisterUsersConnectedCountChangeValueEvent(OnConnectedCountChanged);
         int usersConnectedCountRead = int.Parse(args.Snapshot.Value.ToString());
@@ -162,7 +220,31 @@ public class UserManager : MonoBehaviour
         }
     }
 
-    private void UpdatePlayerHandler (string _userId, UserRuntimeData _userRuntimeData)
+    public void OnLoggedFlagChanged(object sender, ValueChangedEventArgs args)
+    {
+        bool usersLoggedFlag = bool.Parse(args.Snapshot.Value.ToString());
+
+        if (!usersLoggedFlag)
+        {
+            // to not respond to itself when is checking the a client logged
+            if (checkingClientLogged)
+            {
+                return;
+            }
+
+            // respond to the just logged client that we're already logged
+            FirebaseManager.instance.SetUsersLoggedFlag(true);
+        }
+        else
+        {
+            if (checkingClientLogged)
+            {
+                hasClientLogged = true;
+            }
+        }
+    }
+
+    private void UpdatePlayerHandler(string _userId, UserRuntimeData _userRuntimeData)
     {
         playerHandler.SetUserRuntimeData(_userRuntimeData);
 
@@ -170,23 +252,32 @@ public class UserManager : MonoBehaviour
         StartCoroutine(FirebaseManager.instance.GetUserRegisterData(_userId, OnPlayerRegisterDataRead));
     }
 
-    private void OnPlayerRegisterDataRead (string userId, UserRegisterData userRegisterData)
+    private void OnPlayerRegisterDataRead(string userId, UserRegisterData userRegisterData)
     {
         playerHandler.SetUserRegisterData(userRegisterData);
         playerHandler.ChangeModel();
         playerHandler.SetPosition(waypoints[0].transform.position);
         playerHandler.SetCamera(true, true);
         playerHandler.OnWaypointClicked = OnPlayerWaypointClicked;
+        playerHandler.OnRoomChange = OnRoomChange;
         playerHandler.InitializeClient();
     }
 
-    private void OnPlayerWaypointClicked (WaypointHandler waypointHandler)
+    private void OnPlayerWaypointClicked(WaypointHandler waypointHandler)
     {
         FirebaseManager.instance.SetUserRuntimeAttribute(playerHandler.UserId, UserRuntimeAttribute.waypoint, waypointHandler.WaypointIndex);
         OnClientWaypointChanged(playerHandler.UserId, waypointHandler.WaypointIndex);
     }
 
-    private void CreateMateHandler (string _userId, UserRuntimeData _userRuntimeData)
+    private void OnRoomChange(int _roomId)
+    {
+        Debug.Log(_roomId);
+        //Debug.Log("Chamou");
+        LoadWaypointHandlers(_roomId);
+        playerHandler.SetNewRoomLocation(waypoints[0]);
+    }
+
+    private void CreateMateHandler(string _userId, UserRuntimeData _userRuntimeData)
     {
         var mateHandler = Instantiate(mateHandlerPrefab);
         mateHandler.SetUserId(_userId);
@@ -197,7 +288,7 @@ public class UserManager : MonoBehaviour
         StartCoroutine(FirebaseManager.instance.GetUserRegisterData(_userId, OnMateRegisterDataRead));
     }
 
-    private void OnMateRegisterDataRead (string userId, UserRegisterData userRegisterData)
+    private void OnMateRegisterDataRead(string userId, UserRegisterData userRegisterData)
     {
         var mateHandler = GetMateHandler(userId);
         if (mateHandler != null)
@@ -209,12 +300,12 @@ public class UserManager : MonoBehaviour
             mateHandler.OnMateWaypointChanged = OnClientWaypointChanged;
             mateHandler.InitializeClient();
             FirebaseManager.instance.
-                RegisterUserRuntimeAttributeChangeValueEvent(userId, UserRuntimeAttribute.waypoint, 
+                RegisterUserRuntimeAttributeChangeValueEvent(userId, UserRuntimeAttribute.waypoint,
                 mateHandler.OnMateWaypointValueChanged);
         }
     }
 
-    private MateHandler GetMateHandler (string userId)
+    private MateHandler GetMateHandler(string userId)
     {
         for (int i = 0; i < mateHandlers.Count; i++)
         {
@@ -227,7 +318,7 @@ public class UserManager : MonoBehaviour
         return null;
     }
 
-    private void OnClientWaypointChanged (string userId, int waypointValue)
+    private void OnClientWaypointChanged(string userId, int waypointValue)
     {
         if (userId == "")
         {
@@ -248,7 +339,7 @@ public class UserManager : MonoBehaviour
         }
     }
 
-    private void UpdateMatesLabel ()
+    private void UpdateMatesLabel()
     {
         var playerPosition = playerHandler.transform.position;
 

@@ -18,7 +18,7 @@ public class FirebaseManager : MonoBehaviour
     //Firebase variables
     [Header("Firebase")]
     public DependencyStatus dependencyStatus;
-    public FirebaseAuth authAPI;    
+    public FirebaseAuth authAPI;
     public FirebaseUser userAPI;
 
     private string currentUserId = "";
@@ -40,7 +40,7 @@ public class FirebaseManager : MonoBehaviour
         {
             instance = this;
         }
-           
+
         //Check that all of the necessary dependencies for Firebase are present on the system
         FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task =>
         {
@@ -64,7 +64,7 @@ public class FirebaseManager : MonoBehaviour
         authAPI = FirebaseAuth.DefaultInstance;
     }
 
-    public void GetUserRuntimeAttribute (string userId, UserRuntimeAttribute userAttribute, Action<string> userAttributeCallback)
+    public void GetUserRuntimeAttribute(string userId, UserRuntimeAttribute userAttribute, Action<string> userAttributeCallback)
     {
         FirebaseDatabase.DefaultInstance
             .GetReference("usersConnected/" + userId + "/" + userAttribute.ToString())
@@ -81,7 +81,7 @@ public class FirebaseManager : MonoBehaviour
             });
     }
 
-    public void SetUserRuntimeAttribute<T> (string userId, UserRuntimeAttribute userAttribute, T userValue)
+    public void SetUserRuntimeAttribute<T>(string userId, UserRuntimeAttribute userAttribute, T userValue)
     {
         FirebaseDatabase.DefaultInstance
             .GetReference("usersConnected/" + userId + "/" + userAttribute.ToString())
@@ -94,7 +94,7 @@ public class FirebaseManager : MonoBehaviour
             });
     }
 
-    private void GetUserRegisterAttribute (string userId, UserRegisterAttribute userAttribute, Action<string> userAttributeCallback)
+    private void GetUserRegisterAttribute(string userId, UserRegisterAttribute userAttribute, Action<string> userAttributeCallback)
     {
         FirebaseDatabase.DefaultInstance
             .GetReference("users/" + userId + "/" + userAttribute.ToString())
@@ -111,7 +111,7 @@ public class FirebaseManager : MonoBehaviour
             });
     }
 
-    public void SetUserRegisterAttribute<T> (string userId, UserRegisterAttribute userAttribute, T userValue)
+    public void SetUserRegisterAttribute<T>(string userId, UserRegisterAttribute userAttribute, T userValue)
     {
         FirebaseDatabase.DefaultInstance
             .GetReference("users/" + userId + "/" + userAttribute.ToString())
@@ -124,7 +124,7 @@ public class FirebaseManager : MonoBehaviour
             });
     }
 
-    public bool RegisterUserRuntimeAttributeChangeValueEvent (string userId, UserRuntimeAttribute userAttribute,
+    public bool RegisterUserRuntimeAttributeChangeValueEvent(string userId, UserRuntimeAttribute userAttribute,
         EventHandler<ValueChangedEventArgs> callback)
     {
         var dataRef = FirebaseDatabase.DefaultInstance
@@ -139,7 +139,7 @@ public class FirebaseManager : MonoBehaviour
         return true;
     }
 
-    public bool UnregisterUserRuntimeAttributeChangeValueEvent (string userId, UserRuntimeAttribute userAttribute,
+    public bool UnregisterUserRuntimeAttributeChangeValueEvent(string userId, UserRuntimeAttribute userAttribute,
         EventHandler<ValueChangedEventArgs> callback)
     {
         var dataRef = FirebaseDatabase.DefaultInstance
@@ -154,25 +154,25 @@ public class FirebaseManager : MonoBehaviour
         return true;
     }
 
-    public void OnLoginButtonClicked (string emailText, string passwordText)
+    public void OnLoginButtonClicked(string emailText, string passwordText)
     {
         //Call the login coroutine passing the email and password
         StartCoroutine(Login(emailText, passwordText));
     }
 
-    public void OnRegisterButtonClicked (string userNameText, string passwordText, string passwordConfirmText, 
+    public void OnRegisterButtonClicked(string userNameText, string passwordText, string passwordConfirmText,
         ClientGender userGenderType)
     {
         //Call the register coroutine passing the email, password, and username
         StartCoroutine(UserRegister(userNameText, passwordText, passwordConfirmText, userGenderType));
     }
 
-    public void OnAdminRegisterButtonClicked (string emailText, string passwordText, string matricula, ClientType clientType)
+    public void OnAdminRegisterButtonClicked(string emailText, string passwordText, string matricula, ClientType clientType)
     {
         StartCoroutine(AdminRegister(emailText, passwordText, matricula, clientType));
     }
 
-    private IEnumerator Login (string _email, string _password)
+    private IEnumerator Login(string _email, string _password)
     {
         //Call the Firebase authAPI signin function passing the email and password
         Task<AuthResult> LoginTask = authAPI.SignInWithEmailAndPasswordAsync(_email, _password);
@@ -213,7 +213,7 @@ public class FirebaseManager : MonoBehaviour
             userAPI = LoginTask.Result.User;
             currentUserId = userAPI.UserId;
 
-            GetUserRegisterAttribute (currentUserId, UserRegisterAttribute.genero, (string genero) =>
+            GetUserRegisterAttribute(currentUserId, UserRegisterAttribute.genero, (string genero) =>
             {
                 if (genero == ClientGender.none.ToString())
                 {
@@ -229,7 +229,7 @@ public class FirebaseManager : MonoBehaviour
         }
     }
 
-    private IEnumerator UserRegister (string _username, string _password, string _passwordConfirm, ClientGender _genderType)
+    private IEnumerator UserRegister(string _username, string _password, string _passwordConfirm, ClientGender _genderType)
     {
         if (currentUserId == "")
         {
@@ -243,7 +243,7 @@ public class FirebaseManager : MonoBehaviour
         {
             OnUserRegisterPrintResult?.Invoke("A senha está diferente!", Color.red);
         }
-        else 
+        else
         {
             SetUserRegisterAttribute(currentUserId, UserRegisterAttribute.username, _username);
             SetUserRegisterAttribute(currentUserId, UserRegisterAttribute.genero, _genderType);
@@ -252,7 +252,8 @@ public class FirebaseManager : MonoBehaviour
 
             FirebaseUser user = authAPI.CurrentUser;
             string newPassword = _password;
-            if (user != null) {
+            if (user != null)
+            {
 
                 OnLoginPrintResult?.Invoke("Redefinindo senha...", Color.white);
 
@@ -280,7 +281,7 @@ public class FirebaseManager : MonoBehaviour
         }
     }
 
-    private IEnumerator AdminRegister (string _email, string _password, string _matricula, ClientType _clientType)
+    private IEnumerator AdminRegister(string _email, string _password, string _matricula, ClientType _clientType)
     {
         //Call the Firebase auth signin function passing the email and password
         Task<AuthResult> RegisterTask = authAPI.CreateUserWithEmailAndPasswordAsync(_email, _password);
@@ -298,17 +299,17 @@ public class FirebaseManager : MonoBehaviour
             switch (errorCode)
             {
                 case AuthError.MissingEmail:
-                message = "Está faltando o email!";
-                break;
+                    message = "Está faltando o email!";
+                    break;
                 case AuthError.MissingPassword:
-                message = "Está faltando a senha!";
-                break;
+                    message = "Está faltando a senha!";
+                    break;
                 case AuthError.WeakPassword:
-                message = "A senha está fraca!";
-                break;
+                    message = "A senha está fraca!";
+                    break;
                 case AuthError.EmailAlreadyInUse:
-                message = "O email já está em uso!";
-                break;
+                    message = "O email já está em uso!";
+                    break;
             }
 
             OnAdminRegisterPrintResult?.Invoke(message, Color.red);
@@ -350,7 +351,7 @@ public class FirebaseManager : MonoBehaviour
         }
     }
 
-    private void CreateNewUser (string _userId, string _userName, string _matricula, ClientGender _clientGender, ClientType _clientType)
+    private void CreateNewUser(string _userId, string _userName, string _matricula, ClientGender _clientGender, ClientType _clientType)
     {
         var newUserRegisterData = new UserRegisterData(_userName, _matricula, _clientGender.ToString(), _clientType.ToString());
 
@@ -371,7 +372,7 @@ public class FirebaseManager : MonoBehaviour
             });
     }
 
-    public IEnumerator GetUserRegisterData (string _userId, Action<string, UserRegisterData> _userRegisterDataCallback)
+    public IEnumerator GetUserRegisterData(string _userId, Action<string, UserRegisterData> _userRegisterDataCallback)
     {
         var task = FirebaseDatabase.DefaultInstance
            .GetReference("users/" + _userId + "/")
@@ -384,7 +385,7 @@ public class FirebaseManager : MonoBehaviour
         _userRegisterDataCallback.Invoke(_userId, JsonConvert.DeserializeObject<UserRegisterData>(json));
     }
 
-    public IEnumerator GetAllUsersRuntimeData (Action<Dictionary<string, UserRuntimeData>> _usersRuntimeData)
+    public IEnumerator GetAllUsersRuntimeData(Action<Dictionary<string, UserRuntimeData>> _usersRuntimeData)
     {
         var task = FirebaseDatabase.DefaultInstance
            .GetReference("usersConnected/")
@@ -397,7 +398,7 @@ public class FirebaseManager : MonoBehaviour
         _usersRuntimeData.Invoke(JsonConvert.DeserializeObject<Dictionary<string, UserRuntimeData>>(json));
     }
 
-    public void SetUserRuntimeData (string _userId, UserRuntimeData _userRuntimeData, Action<string> _userRuntimeDataCallback)
+    public void SetUserRuntimeData(string _userId, UserRuntimeData _userRuntimeData, Action<string> _userRuntimeDataCallback)
     {
         var json = JsonConvert.SerializeObject(_userRuntimeData);
 
@@ -416,7 +417,7 @@ public class FirebaseManager : MonoBehaviour
            });
     }
 
-    public void GetUsersConnectedCount (Action<int> usersConnectedCountCallback)
+    public void GetUsersConnectedCount(Action<int> usersConnectedCountCallback)
     {
         FirebaseDatabase.DefaultInstance
             .GetReference("usersConnectedCount")
@@ -433,7 +434,7 @@ public class FirebaseManager : MonoBehaviour
             });
     }
 
-    public void SetUsersConnectedCount (int count)
+    public void SetUsersConnectedCount(int count)
     {
         FirebaseDatabase.DefaultInstance
             .GetReference("usersConnectedCount")
@@ -446,7 +447,7 @@ public class FirebaseManager : MonoBehaviour
             });
     }
 
-    public bool RegisterUsersConnectedCountChangeValueEvent (EventHandler<ValueChangedEventArgs> callback)
+    public bool RegisterUsersConnectedCountChangeValueEvent(EventHandler<ValueChangedEventArgs> callback)
     {
         var dataRef = FirebaseDatabase.DefaultInstance
             .GetReference("usersConnectedCount");
@@ -460,10 +461,68 @@ public class FirebaseManager : MonoBehaviour
         return true;
     }
 
-    public bool UnregisterUsersConnectedCountChangeValueEvent (EventHandler<ValueChangedEventArgs> callback)
+    public bool UnregisterUsersConnectedCountChangeValueEvent(EventHandler<ValueChangedEventArgs> callback)
     {
         var dataRef = FirebaseDatabase.DefaultInstance
             .GetReference("usersConnectedCount");
+
+        if (dataRef == null)
+        {
+            return false;
+        }
+
+        dataRef.ValueChanged -= callback;
+        return true;
+    }
+
+    public void SetUsersLoggedFlag(bool flagValue)
+    {
+        FirebaseDatabase.DefaultInstance
+            .GetReference("usersLoggedFlag")
+            .SetValueAsync(flagValue).ContinueWithOnMainThread(task =>
+            {
+                if (task.IsFaulted)
+                {
+                    Debug.LogError(task + ": failed to set users logged flag");
+                }
+            });
+    }
+
+    public void GetUsersLoggedFlag(Action<bool> usersLoggedFlagCallback)
+    {
+        FirebaseDatabase.DefaultInstance
+            .GetReference("usersLoggedFlag")
+            .GetValueAsync().ContinueWithOnMainThread(task =>
+            {
+                if (task.IsFaulted)
+                {
+                    Debug.LogError(task + ": failed to get users logged flag.");
+                }
+                else if (task.IsCompleted)
+                {
+                    usersLoggedFlagCallback.Invoke(bool.Parse(task.Result.Value.ToString()));
+                }
+            });
+    }
+
+    public bool RegisterUsersLoggedFlagChangeValueEvent(EventHandler<ValueChangedEventArgs> callback)
+    {
+        var dataRef = FirebaseDatabase.DefaultInstance
+            .GetReference("usersLoggedFlag");
+
+        if (dataRef == null)
+        {
+            return false;
+        }
+
+        dataRef.ValueChanged += callback;
+        return true;
+    }
+
+    public bool UnregisterUsersLoggedFlagChangeValueEvent(EventHandler<ValueChangedEventArgs> callback)
+    {
+        var dataRef = FirebaseDatabase.DefaultInstance
+            .GetReference("usersLoggedFlag");
 
         if (dataRef == null)
         {

@@ -24,5 +24,5 @@ public abstract class WaypointHandler : MonoBehaviour
 
 public enum WaypointType
 {
-    Floor, Desk
+    Floor, Desk, Door
 }
