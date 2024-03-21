@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Runtime.Remoting.Messaging;
 using System.Runtime.Remoting.Metadata;
 using Unity.Mathematics;
+using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.Analytics;
 
@@ -64,6 +65,13 @@ public class UserManager : MonoBehaviour
     private void Update()
     {
         UpdateMatesLabel();
+
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            var message = "Olá a todos";
+            SendClientMessage(playerHandler.UserId, message);
+        }
+ 
 
         //Debug.LogWarning("RoomId: " + roomId);
 
@@ -153,7 +161,7 @@ public class UserManager : MonoBehaviour
         }
 
         // set the player runtime data to the database, it will continue in OnPlayerUserRuntimeDataWrite
-        FirebaseManager.instance.SetUserRuntimeData(_userId, new UserRuntimeData(0, 0, ClientState.Idle, null), OnPlayerUserRuntimeDataWrite);
+        FirebaseManager.instance.SetUserRuntimeData(_userId, new UserRuntimeData(0, 0, ClientState.Idle, ""), OnPlayerUserRuntimeDataWrite);
     }
 
     private void OnPlayerUserRuntimeDataWrite(string _userId)
@@ -188,7 +196,7 @@ public class UserManager : MonoBehaviour
             {
                 if (!playerHandler.IsClientInitialized)
                 {
-                    var playerRuntimeDataStart = new UserRuntimeData(0, 0, ClientState.Idle, null);
+                    var playerRuntimeDataStart = new UserRuntimeData(0, 0, ClientState.Idle, "");
                     UpdatePlayerHandler(clientUserId, playerRuntimeDataStart);
                 }
             }
@@ -298,10 +306,14 @@ public class UserManager : MonoBehaviour
             mateHandler.ChangeModel();
             mateHandler.SetPosition(waypoints[waypointIdx].transform.position);
             mateHandler.OnMateWaypointChanged = OnClientWaypointChanged;
+            //mateHandler.OnMateMessageChanged = OnClientMessageChanged;
             mateHandler.InitializeClient();
             FirebaseManager.instance.
                 RegisterUserRuntimeAttributeChangeValueEvent(userId, UserRuntimeAttribute.waypoint,
                 mateHandler.OnMateWaypointValueChanged);
+            FirebaseManager.instance.
+                RegisterUserRuntimeAttributeChangeValueEvent(userId, UserRuntimeAttribute.message,
+                mateHandler.OnMateMessageValueChanged);
         }
     }
 
@@ -349,7 +361,7 @@ public class UserManager : MonoBehaviour
         }
     }
 
-    private void SendMessage(string userId, string message)
+    private void SendClientMessage(string userId, string message)
     {
         FirebaseManager.instance.SetUserRuntimeAttribute(userId, UserRuntimeAttribute.message, message);
     }
