@@ -81,12 +81,14 @@ public class UserRuntimeData
     public string waypoint;
     public string roomId;
     public string state;
+    public string message;
 
-    public UserRuntimeData (int _w, int _rid, ClientState _cs)
+    public UserRuntimeData(int _w, int _rid, ClientState _cs, string _message)
     {
         waypoint = _w.ToString();
         roomId = _rid.ToString();
         state = _cs.ToString();
+        message = _message;
     }
 }
 
@@ -104,7 +106,7 @@ public enum UserRegisterAttribute
 
 public enum UserRuntimeAttribute
 {
-    waypoint, roomId, state
+    waypoint, roomId, state, message
 }
 
 public enum ClientGender

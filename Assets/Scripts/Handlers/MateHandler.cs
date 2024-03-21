@@ -15,6 +15,7 @@ public class MateHandler : ClientHandler
     public TextMeshPro usernameLabel;
 
     public Action<string, int> OnMateWaypointChanged;
+    public Action<string, string> OnMateMessageChanged;
 
     public void Update ()
     {
@@ -69,5 +70,12 @@ public class MateHandler : ClientHandler
         // change the username font size according to the player distance
         var distanceNormalized = Mathf.InverseLerp(0f, usernameDistanceForFontMaxSize, Vector3.Distance(transform.position, playerPosition));
         usernameLabel.fontSize = Mathf.Lerp(10f, usernamFontMaxSize, distanceNormalized);
+    }
+
+    public void OnMateMessageValueChanged(object sender, ValueChangedEventArgs args)
+    {
+        var message = args.Snapshot.Value.ToString();
+        OnMateMessageChanged?.Invoke(UserId, message);
+        Debug.Log(RegisterData.username.ToString() + ": " + message);
     }
 }

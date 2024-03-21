@@ -153,7 +153,7 @@ public class UserManager : MonoBehaviour
         }
 
         // set the player runtime data to the database, it will continue in OnPlayerUserRuntimeDataWrite
-        FirebaseManager.instance.SetUserRuntimeData(_userId, new UserRuntimeData(0, 0, ClientState.Idle), OnPlayerUserRuntimeDataWrite);
+        FirebaseManager.instance.SetUserRuntimeData(_userId, new UserRuntimeData(0, 0, ClientState.Idle, null), OnPlayerUserRuntimeDataWrite);
     }
 
     private void OnPlayerUserRuntimeDataWrite(string _userId)
@@ -188,7 +188,7 @@ public class UserManager : MonoBehaviour
             {
                 if (!playerHandler.IsClientInitialized)
                 {
-                    var playerRuntimeDataStart = new UserRuntimeData(0, 0, ClientState.Idle);
+                    var playerRuntimeDataStart = new UserRuntimeData(0, 0, ClientState.Idle, null);
                     UpdatePlayerHandler(clientUserId, playerRuntimeDataStart);
                 }
             }
@@ -347,5 +347,10 @@ public class UserManager : MonoBehaviour
         {
             mateHandlers[i].UpdateMateLabel(playerPosition);
         }
+    }
+
+    private void SendMessage(string userId, string message)
+    {
+        FirebaseManager.instance.SetUserRuntimeAttribute(userId, UserRuntimeAttribute.message, message);
     }
 }
