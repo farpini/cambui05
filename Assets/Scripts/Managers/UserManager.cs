@@ -69,11 +69,11 @@ public class UserManager : MonoBehaviour
     {
         UpdateMatesLabel();
 
-        //if (Input.GetKeyDown(KeyCode.T))
-        //{
-            //var message = "Olá a todos";
-            //SendClientMessage(playerHandler.UserId, message);
-        //}
+        if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            var message = "Olá a todos";
+            SendClientMessage(playerHandler.UserId, message);
+        }
  
 
         //Debug.LogWarning("RoomId: " + roomId);
@@ -156,6 +156,7 @@ public class UserManager : MonoBehaviour
 
     private IEnumerator PostLoginWaitForLoggedFlag(string _userId)
     {
+        /*
         // set to true so we can force the value to change when set to false after 0.5f
         FirebaseManager.instance.SetUsersLoggedFlag(true);
 
@@ -175,6 +176,9 @@ public class UserManager : MonoBehaviour
         {
             Debug.Log("IT NEEDS TO CLEAR!!!");
         }
+        */
+
+        yield return null;
 
         // set the player runtime data to the database, it will continue in OnPlayerUserRuntimeDataWrite
         FirebaseManager.instance.SetUserRuntimeData(_userId, new UserRuntimeData(0, 0, ClientState.Idle, ""), OnPlayerUserRuntimeDataWrite);
@@ -309,34 +313,33 @@ public class UserManager : MonoBehaviour
     private void ProfessorStartClass()
     {
         FirebaseManager.instance.SetWorldState(WorldState.InClass);
+        playerHandler.SetWorldState(WorldState.InClass);
     }
 
     private void ProfessorNextClick()
     {
         FirebaseManager.instance.SetWorldStateArg(1);
+        playerHandler.SetWorldStateArg(1);
     }
 
     private void ProfessorPreviousClick()
     {
         FirebaseManager.instance.SetWorldStateArg(0);
+        playerHandler.SetWorldStateArg(0);
     }
 
     private void OnWorldStateChanged(object sender, ValueChangedEventArgs args)
     {
         var message = args.Snapshot.Value.ToString();
         WorldState state = (WorldState)Enum.Parse(typeof(WorldState), message);
-        Debug.Log(state);
-        //OnMateMessageChanged?.Invoke(UserId, message);
-        //Debug.Log(RegisterData.username.ToString() + ": " + message);
+        playerHandler.SetWorldState(state);
     }
 
     private void OnWorldStateArgChanged(object sender, ValueChangedEventArgs args)
     {
         var message = args.Snapshot.Value.ToString();
-        int state = int.Parse(message);
-        Debug.Log(state);
-        //OnMateMessageChanged?.Invoke(UserId, message);
-        //Debug.Log(RegisterData.username.ToString() + ": " + message);
+        int stateArg = int.Parse(message);
+        playerHandler.SetWorldStateArg(stateArg);
     }
 
     private void OnPlayerWaypointClicked(WaypointHandler waypointHandler)
@@ -373,7 +376,7 @@ public class UserManager : MonoBehaviour
             mateHandler.ChangeModel();
             mateHandler.SetPosition(waypoints[waypointIdx].transform.position);
             mateHandler.OnMateWaypointChanged = OnClientWaypointChanged;
-            //mateHandler.OnMateMessageChanged = OnClientMessageChanged;
+            mateHandler.OnMateMessageChanged = OnClientMessageChanged;
             mateHandler.InitializeClient();
             FirebaseManager.instance.
                 RegisterUserRuntimeAttributeChangeValueEvent(userId, UserRuntimeAttribute.waypoint,
@@ -430,6 +433,29 @@ public class UserManager : MonoBehaviour
         {
             mateHandlers[i].UpdateMateLabel(playerPosition);
         }
+    }
+
+    private void OnClientMessageChanged (string userId, string message)
+    {
+        if (userId == "")
+        {
+            return;
+        }
+
+        if (userId == playerHandler.UserId)
+        {
+            return;
+        }
+
+        var mateHandler = GetMateHandler(userId);
+
+        if (mateHandler == null)
+        {
+            Debug.LogError("not found mate");
+            return;
+        }
+
+        Debug.Log(mateHandler.RegisterData.username + ": " + message);
     }
 
     private void SendClientMessage(string userId, string message)
