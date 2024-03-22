@@ -334,7 +334,7 @@ namespace Microsoft.MixedReality.Toolkit.Experimental.UI
         protected void OnDisable()
         {            
             m_LastKeyboardLayout = LayoutType.Alpha;
-            Clear();
+            //Clear();
         }
 
 
@@ -499,7 +499,7 @@ namespace Microsoft.MixedReality.Toolkit.Experimental.UI
             scale = Mathf.Clamp(scale, m_MinScale, m_MaxScale);
             transform.localScale = m_StartingScale * scale;
 
-            Debug.LogFormat("Setting scale: {0} for distance: {1}", scale, distance);
+            //Debug.LogFormat("Setting scale: {0} for distance: {1}", scale, distance);
         }
 
         /// <summary>

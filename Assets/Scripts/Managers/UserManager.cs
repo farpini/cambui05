@@ -25,6 +25,7 @@ public class UserManager : MonoBehaviour
     public GameObject XRGO;
     public GameObject XRSimulatorGO;
     public XRInteractionManager XRManager;
+    public GameObject transformToTest;
 
     public List<GameObject> floorWaypointHolder;
     public List<GameObject> deskWaypointHolder;
@@ -163,6 +164,7 @@ public class UserManager : MonoBehaviour
         playerHandler = Instantiate(playerHandlerPrefab);
         playerHandler.SetXRGO(XRGO);
         playerHandler.SetPosition(waypoints[0].transform.position);
+        //playerHandler.SetPosition(transformToTest.transform.position);
     }
 
     private void OnLogin(string _userId)

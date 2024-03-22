@@ -15495,9 +15495,9 @@ GameObject:
   - component: {fileID: 22335612}
   - component: {fileID: 11499414}
   - component: {fileID: 11401954}
-  - component: {fileID: 114593871428788132}
+  - component: {fileID: 7588761703656879517}
   m_Layer: 0
-  m_Name: NonNativeKeyboard
+  m_Name: NonNativeKeyboardAdapt
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -15588,7 +15588,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   InputField: {fileID: 2097082730694957451}
   InputFieldSlide: {fileID: 11448462}
-  SliderEnabled: 1
+  SliderEnabled: 0
   SubmitOnEnter: 1
   AlphaKeyboard: {fileID: 11451576}
   SymbolKeyboard: {fileID: 11428666}
@@ -15599,9 +15599,9 @@ MonoBehaviour:
   m_MinScale: 0.5
   m_MaxDistance: 3
   m_MinDistance: 1
-  CloseOnInactivity: 1
+  CloseOnInactivity: 0
   CloseOnInactivityTime: 15
---- !u!114 &114593871428788132
+--- !u!114 &7588761703656879517
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -15610,14 +15610,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 146120}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
+  m_Script: {fileID: 11500000, guid: 7951c64acb0fa62458bf30a60089fe2d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_IgnoreReversedGraphics: 1
-  m_BlockingObjects: 0
+  m_IgnoreReversedGraphics: 0
+  m_CheckFor2DOcclusion: 0
+  m_CheckFor3DOcclusion: 0
   m_BlockingMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 4294967295
+  m_RaycastTriggerInteraction: 1
 --- !u!1 &146124
 GameObject:
   m_ObjectHideFlags: 0
