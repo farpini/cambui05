@@ -10,4 +10,6 @@ public class FloorHandler : WaypointHandler
     {
         waypointType = WaypointType.Floor;
     }
+
+
 }

@@ -11,8 +11,6 @@ public abstract class ClientHandler : MonoBehaviour
     protected static WorldState CurrentWorldState;
     protected static int CurrentWorldStateArg;
 
-    protected Animator animator;
-
     protected WaypointHandler currentWaypoint;
 
     protected string userId;
@@ -29,11 +27,6 @@ public abstract class ClientHandler : MonoBehaviour
     public Action<int> OnRoomChange;
     public Action<WaypointHandler> OnWaypointClicked;
 
-    private void Start()
-    {
-        
-        //animator.SetInteger("stateValue", 0);
-    }
 
     public void SetUserId (string _userId)
     {
@@ -54,21 +47,6 @@ public abstract class ClientHandler : MonoBehaviour
     public virtual void InitializeClient ()
     {
         isClientInitialized = true;
-    }
-
-    public void ChangeModel()
-    {
-        switch (registerData.genero)
-        {
-            case "masculino":
-                transform.GetChild(0).GetChild(3).gameObject.SetActive(true);
-                animator = transform.GetComponentInChildren<Animator>(); 
-                break;
-            case "feminino":
-                transform.GetChild(0).GetChild(2).gameObject.SetActive(true);
-                animator = transform.GetComponentInChildren<Animator>();
-                break;
-        }
     }
 
     public void SetPosition (Vector3 _position)
@@ -142,22 +120,6 @@ public abstract class ClientHandler : MonoBehaviour
         }
     }
 
-    protected void ChangeAnimator()
-    {
-        switch (runtimeData.state)
-        {
-            case "Idle":
-                animator.SetInteger("stateValue", 0);
-                break;
-            case "Walking":
-                animator.SetInteger("stateValue", 1);
-                break;
-            case "Sit":
-                animator.SetInteger("stateValue", 2);
-                break;
-        }
-    }
-
     private bool IsCloseEnoughToTarget (Vector3 currentPosition, Vector3 targetPosition)
     {
         return Vector3.Distance(currentPosition, targetPosition) < 0.1f;
@@ -183,10 +145,10 @@ public abstract class ClientHandler : MonoBehaviour
 
             // this is temporary, waypoint index (1) represents the professor position to start the class
             // so set it's direction to be straight to the students
-            if (currentWaypoint.WaypointIndex == 1)
-            {
-                transform.rotation = Quaternion.LookRotation(professorFixedDirection);
-            }
+            //if (currentWaypoint.WaypointIndex == 1)
+            //{
+            //    transform.rotation = Quaternion.LookRotation(professorFixedDirection);
+            //}
 
             SetCamera(true);
         }

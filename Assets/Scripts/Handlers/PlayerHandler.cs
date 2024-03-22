@@ -18,11 +18,9 @@ public class PlayerHandler : ClientHandler
             return;
         }
 
-        CheckWaypointClick();
         CheckButtonClick();
         CheckMovement();
         UpdatePosition();
-        ChangeAnimator();
     }
 
     public override void SetCamera (bool isStand, bool initRotation = false)
@@ -35,24 +33,9 @@ public class PlayerHandler : ClientHandler
         }
     }
 
-    private void CheckWaypointClick ()
+    public void SetXRGO (GameObject xrgo)
     {
-        if (Input.GetMouseButtonDown(0))
-        {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-            var layerMask = LayerMask.GetMask("Waypoint");
-
-            if (Physics.Raycast(ray, out var hitInfo, 1000f, layerMask))
-            {
-                var waypointHandler = hitInfo.transform.gameObject.GetComponent<WaypointHandler>();
-                if (waypointHandler != null)
-                {
-                    //var waypointHandler = hitInfo.transform.gameObject.GetComponent<WaypointHandler>();
-                    OnWaypointClicked?.Invoke(waypointHandler);
-                }
-            }
-        }
+        xrgo.transform.SetParent(headTransform, false);
     }
 
     private void CheckButtonClick()

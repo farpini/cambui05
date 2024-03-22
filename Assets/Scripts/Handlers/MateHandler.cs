@@ -9,6 +9,8 @@ public class MateHandler : ClientHandler
     public static int usernamFontMaxSize = 24;
     public static float usernameDistanceForFontMaxSize = 10f;
 
+    protected Animator animator;
+
     public Transform standLabelTransform;
     public Transform sitLabelTransform;
 
@@ -26,6 +28,37 @@ public class MateHandler : ClientHandler
 
         UpdatePosition();
         ChangeAnimator();
+    }
+
+    private void ChangeAnimator ()
+    {
+        switch (runtimeData.state)
+        {
+            case "Idle":
+            animator.SetInteger("stateValue", 0);
+            break;
+            case "Walking":
+            animator.SetInteger("stateValue", 1);
+            break;
+            case "Sit":
+            animator.SetInteger("stateValue", 2);
+            break;
+        }
+    }
+
+    public void ChangeModel ()
+    {
+        switch (registerData.genero)
+        {
+            case "masculino":
+            transform.GetChild(0).GetChild(3).gameObject.SetActive(true);
+            animator = transform.GetComponentInChildren<Animator>();
+            break;
+            case "feminino":
+            transform.GetChild(0).GetChild(2).gameObject.SetActive(true);
+            animator = transform.GetComponentInChildren<Animator>();
+            break;
+        }
     }
 
     public void OnMateWaypointValueChanged (object sender, ValueChangedEventArgs args)

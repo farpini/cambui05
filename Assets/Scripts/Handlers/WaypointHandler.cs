@@ -1,16 +1,20 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
 
-public abstract class WaypointHandler : MonoBehaviour
+public abstract class WaypointHandler : InteractionHandler
 {
-    protected WaypointType waypointType;
+    [SerializeField] protected WaypointType waypointType;
     protected int waypointIndex;
 
     public bool waypointProfessorAccess;
     public bool waypointStudentAccess;
 
     public WaypointType WaypointType => waypointType;
+
+    public Action<WaypointHandler> OnWaypointSelected;
 
     public int WaypointIndex
     {
@@ -20,6 +24,18 @@ public abstract class WaypointHandler : MonoBehaviour
 
     //public int[] waypointsInRange;
     //public int[] desksInRange;
+
+    public void WaypointSelected ()
+    {
+        Debug.Log("Selected");
+        OnWaypointSelected?.Invoke(this);
+    }
+
+    public void WaypointActivate ()
+    {
+        //Debug.Log("Activate");
+        //OnWaypointSelected?.Invoke(this);
+    }
 }
 
 public enum WaypointType

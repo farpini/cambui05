@@ -13,6 +13,7 @@ using Unity.Mathematics;
 using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.Analytics;
+using UnityEngine.XR.Interaction.Toolkit;
 
 public class UserManager : MonoBehaviour
 {
@@ -20,6 +21,10 @@ public class UserManager : MonoBehaviour
 
     public PlayerHandler playerHandlerPrefab;
     public MateHandler mateHandlerPrefab;
+
+    public GameObject XRGO;
+    public GameObject XRSimulatorGO;
+    public XRInteractionManager XRManager;
 
     public List<GameObject> floorWaypointHolder;
     public List<GameObject> deskWaypointHolder;
@@ -34,6 +39,7 @@ public class UserManager : MonoBehaviour
     public List<WaypointHandler> waypoints;
 
     private int currentUsersConnectedCount = 0;
+    private bool isPlayerLogged = false;
 
     private bool registeredToWaypointChanged = false;
     private bool registeredToLoggedFlagChanged = false;
@@ -67,13 +73,25 @@ public class UserManager : MonoBehaviour
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.F1))
+        {
+            XRSimulatorGO.SetActive(!XRSimulatorGO.activeSelf);
+        }
+
+        if (!isPlayerLogged)
+        {
+            return;
+        }
+
         UpdateMatesLabel();
 
+        /*
         if (Input.GetKeyDown(KeyCode.UpArrow))
         {
             var message = "Olá a todos";
             SendClientMessage(playerHandler.UserId, message);
         }
+        */
  
 
         //Debug.LogWarning("RoomId: " + roomId);
@@ -104,6 +122,8 @@ public class UserManager : MonoBehaviour
 
                 waypoints[waypointIdx] = floorArray[j];
                 waypoints[waypointIdx].WaypointIndex = waypointIdx;
+                waypoints[waypointIdx].SetXRManager(XRManager);
+                waypoints[waypointIdx].OnWaypointSelected = OnPlayerWaypointClicked;
             }
         }
 
@@ -116,6 +136,8 @@ public class UserManager : MonoBehaviour
             {
                 waypoints[waypointIdx] = deskArray[j];
                 waypoints[waypointIdx].WaypointIndex = waypointIdx;
+                waypoints[waypointIdx].SetXRManager(XRManager);
+                waypoints[waypointIdx].OnWaypointSelected = OnPlayerWaypointClicked;
             }
         }
 
@@ -128,6 +150,8 @@ public class UserManager : MonoBehaviour
             {
                 waypoints[waypointIdx] = doorArray[j];
                 waypoints[waypointIdx].WaypointIndex = waypointIdx;
+                waypoints[waypointIdx].SetXRManager(XRManager);
+                waypoints[waypointIdx].OnWaypointSelected = OnPlayerWaypointClicked;
             }
         }
 
@@ -137,6 +161,8 @@ public class UserManager : MonoBehaviour
     private void CreatePlayerHandler()
     {
         playerHandler = Instantiate(playerHandlerPrefab);
+        playerHandler.SetXRGO(XRGO);
+        playerHandler.SetPosition(waypoints[0].transform.position);
     }
 
     private void OnLogin(string _userId)
@@ -151,7 +177,12 @@ public class UserManager : MonoBehaviour
 
         registeredToLoggedFlagChanged = true;
 
-        StartCoroutine(PostLoginWaitForLoggedFlag(_userId));
+        isPlayerLogged = true;
+
+        // set the player runtime data to the database, it will continue in OnPlayerUserRuntimeDataWrite
+        FirebaseManager.instance.SetUserRuntimeData(_userId, new UserRuntimeData(0, 0, ClientState.Idle, ""), OnPlayerUserRuntimeDataWrite);
+
+        //StartCoroutine(PostLoginWaitForLoggedFlag(_userId));
     }
 
     private IEnumerator PostLoginWaitForLoggedFlag(string _userId)
@@ -283,10 +314,9 @@ public class UserManager : MonoBehaviour
     private void OnPlayerRegisterDataRead(string userId, UserRegisterData userRegisterData)
     {
         playerHandler.SetUserRegisterData(userRegisterData);
-        playerHandler.ChangeModel();
         playerHandler.SetPosition(waypoints[0].transform.position);
-        playerHandler.SetCamera(true, true);
-        playerHandler.OnWaypointClicked = OnPlayerWaypointClicked;
+        //playerHandler.SetCamera(true, true);
+        //playerHandler.OnWaypointClicked = OnPlayerWaypointClicked;
         playerHandler.OnRoomChange = OnRoomChange;
         playerHandler.OnButtonClicked = OnButtonClicked;
         playerHandler.InitializeClient();
@@ -342,8 +372,13 @@ public class UserManager : MonoBehaviour
         playerHandler.SetWorldStateArg(stateArg);
     }
 
-    private void OnPlayerWaypointClicked(WaypointHandler waypointHandler)
+    private void OnPlayerWaypointClicked (WaypointHandler waypointHandler)
     {
+        if (!isPlayerLogged)
+        {
+            return;
+        }
+
         FirebaseManager.instance.SetUserRuntimeAttribute(playerHandler.UserId, UserRuntimeAttribute.waypoint, waypointHandler.WaypointIndex);
         OnClientWaypointChanged(playerHandler.UserId, waypointHandler.WaypointIndex);
     }
