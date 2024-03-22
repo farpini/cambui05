@@ -532,4 +532,91 @@ public class FirebaseManager : MonoBehaviour
         dataRef.ValueChanged -= callback;
         return true;
     }
+
+    public bool RegisterWorldStateChangeValueEvent(EventHandler<ValueChangedEventArgs> callback)
+    {
+        var dataRef = FirebaseDatabase.DefaultInstance
+            .GetReference("worldState");
+
+        if (dataRef == null)
+        {
+            return false;
+        }
+
+        dataRef.ValueChanged += callback;
+        return true;
+    }
+
+    public bool UnregisterWorldStateChangeValueEvent(EventHandler<ValueChangedEventArgs> callback)
+    {
+        var dataRef = FirebaseDatabase.DefaultInstance
+            .GetReference("worldState");
+
+        if (dataRef == null)
+        {
+            return false;
+        }
+
+        dataRef.ValueChanged -= callback;
+        return true;
+    }
+
+    public bool RegisterWorldStateArgChangeValueEvent(EventHandler<ValueChangedEventArgs> callback)
+    {
+        var dataRef = FirebaseDatabase.DefaultInstance
+            .GetReference("worldStateArg");
+
+        if (dataRef == null)
+        {
+            return false;
+        }
+
+        dataRef.ValueChanged += callback;
+        return true;
+    }
+
+    public bool UnregisterWorldStateArgChangeValueEvent(EventHandler<ValueChangedEventArgs> callback)
+    {
+        var dataRef = FirebaseDatabase.DefaultInstance
+            .GetReference("worldStateArg");
+
+        if (dataRef == null)
+        {
+            return false;
+        }
+
+        dataRef.ValueChanged -= callback;
+        return true;
+    }
+
+    public void SetWorldState(WorldState worldState)
+    {
+        FirebaseDatabase.DefaultInstance
+            .GetReference("worldState")
+            .SetValueAsync(worldState.ToString()).ContinueWithOnMainThread(task =>
+            {
+                if (task.IsFaulted)
+                {
+                    Debug.LogError(task + ": failed to set runtime attribute");
+                }
+            });
+    }
+
+    public void SetWorldStateArg(int arg)
+    {
+        FirebaseDatabase.DefaultInstance
+            .GetReference("worldStateArg")
+            .SetValueAsync(arg.ToString()).ContinueWithOnMainThread(task =>
+            {
+                if (task.IsFaulted)
+                {
+                    Debug.LogError(task + ": failed to set runtime attribute");
+                }
+            });
+    }
+}
+
+public enum WorldState
+{
+    Start, InClass
 }

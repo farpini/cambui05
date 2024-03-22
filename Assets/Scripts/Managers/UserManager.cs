@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Remoting.Messaging;
 using System.Runtime.Remoting.Metadata;
 using Unity.Mathematics;
@@ -24,11 +25,13 @@ public class UserManager : MonoBehaviour
     public List<GameObject> deskWaypointHolder;
     public List<GameObject> doorWaypointHolder;
 
+    private int[] waypointsRoomOrigins = new int[3];
+
     public PlayerHandler playerHandler;
     private List<MateHandler> mateHandlers;
 
     private WaypointsData waypointsData;
-    public WaypointHandler[] waypoints;
+    public List<WaypointHandler> waypoints;
 
     private int currentUsersConnectedCount = 0;
 
@@ -56,7 +59,7 @@ public class UserManager : MonoBehaviour
 
     private void Start()
     {
-        LoadWaypointHandlers(0);
+        LoadWaypointHandlers();
         CreatePlayerHandler();
 
         FirebaseManager.instance.OnLoginSuccess += OnLogin;
@@ -66,11 +69,11 @@ public class UserManager : MonoBehaviour
     {
         UpdateMatesLabel();
 
-        if (Input.GetKeyDown(KeyCode.T))
-        {
-            var message = "Olá a todos";
-            SendClientMessage(playerHandler.UserId, message);
-        }
+        //if (Input.GetKeyDown(KeyCode.T))
+        //{
+            //var message = "Olá a todos";
+            //SendClientMessage(playerHandler.UserId, message);
+        //}
  
 
         //Debug.LogWarning("RoomId: " + roomId);
@@ -86,33 +89,46 @@ public class UserManager : MonoBehaviour
         }
     }
 
-    private void LoadWaypointHandlers(int index)
+    private void LoadWaypointHandlers()
     {
-        var floorWaypoints = floorWaypointHolder[index].GetComponentsInChildren<WaypointHandler>();
-        var deskWaypoints = deskWaypointHolder[index].GetComponentsInChildren<WaypointHandler>();
-        var doorWaypoints = doorWaypointHolder[index].GetComponentsInChildren<WaypointHandler>();
-        var waypointsCount = floorWaypoints.Length + deskWaypoints.Length + doorWaypoints.Length;
-
-        waypoints = new WaypointHandler[waypointsCount];
-
         int waypointIdx = 0;
 
-        for (int i = 0; i < floorWaypoints.Length; i++, waypointIdx++)
+        for (int i = 0; i < floorWaypointHolder.Count; i++)
         {
-            waypoints[waypointIdx] = floorWaypoints[i];
-            waypoints[waypointIdx].WaypointIndex = waypointIdx;
+            var floorArray = floorWaypointHolder[i].GetComponentsInChildren<WaypointHandler>();
+            waypoints.AddRange(floorArray.ToList());
+
+            for (int j = 0; j < floorArray.Length; j++, waypointIdx++)
+            {
+                if (j == 0) waypointsRoomOrigins[i] = waypointIdx;
+
+                waypoints[waypointIdx] = floorArray[j];
+                waypoints[waypointIdx].WaypointIndex = waypointIdx;
+            }
         }
 
-        for (int i = 0; i < deskWaypoints.Length; i++, waypointIdx++)
+        for (int i = 0; i < deskWaypointHolder.Count; i++)
         {
-            waypoints[waypointIdx] = deskWaypoints[i];
-            waypoints[waypointIdx].WaypointIndex = waypointIdx;
+            var deskArray = deskWaypointHolder[i].GetComponentsInChildren<WaypointHandler>();
+            waypoints.AddRange(deskArray.ToList());
+
+            for (int j = 0; j < deskArray.Length; j++, waypointIdx++)
+            {
+                waypoints[waypointIdx] = deskArray[j];
+                waypoints[waypointIdx].WaypointIndex = waypointIdx;
+            }
         }
 
-        for (int i = 0; i < doorWaypoints.Length; i++, waypointIdx++)
+        for (int i = 0; i < doorWaypointHolder.Count; i++)
         {
-            waypoints[waypointIdx] = doorWaypoints[i];
-            waypoints[waypointIdx].WaypointIndex = waypointIdx;
+            var doorArray = doorWaypointHolder[i].GetComponentsInChildren<WaypointHandler>();
+            waypoints.AddRange(doorArray.ToList());
+
+            for (int j = 0; j < doorArray.Length; j++, waypointIdx++)
+            {
+                waypoints[waypointIdx] = doorArray[j];
+                waypoints[waypointIdx].WaypointIndex = waypointIdx;
+            }
         }
 
         //Debug.Log("WaypointCount: " + waypointsCount);
@@ -268,7 +284,59 @@ public class UserManager : MonoBehaviour
         playerHandler.SetCamera(true, true);
         playerHandler.OnWaypointClicked = OnPlayerWaypointClicked;
         playerHandler.OnRoomChange = OnRoomChange;
+        playerHandler.OnButtonClicked = OnButtonClicked;
         playerHandler.InitializeClient();
+    }
+
+    private void OnButtonClicked(ButtonType type)
+    {
+        switch (type)
+        {
+            case ButtonType.Next:
+                ProfessorNextClick();
+                break;
+            case ButtonType.Start:
+                ProfessorStartClass();
+                break;
+            case ButtonType.Previous:
+                ProfessorPreviousClick();
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void ProfessorStartClass()
+    {
+        FirebaseManager.instance.SetWorldState(WorldState.InClass);
+    }
+
+    private void ProfessorNextClick()
+    {
+        FirebaseManager.instance.SetWorldStateArg(1);
+    }
+
+    private void ProfessorPreviousClick()
+    {
+        FirebaseManager.instance.SetWorldStateArg(0);
+    }
+
+    private void OnWorldStateChanged(object sender, ValueChangedEventArgs args)
+    {
+        var message = args.Snapshot.Value.ToString();
+        WorldState state = (WorldState)Enum.Parse(typeof(WorldState), message);
+        Debug.Log(state);
+        //OnMateMessageChanged?.Invoke(UserId, message);
+        //Debug.Log(RegisterData.username.ToString() + ": " + message);
+    }
+
+    private void OnWorldStateArgChanged(object sender, ValueChangedEventArgs args)
+    {
+        var message = args.Snapshot.Value.ToString();
+        int state = int.Parse(message);
+        Debug.Log(state);
+        //OnMateMessageChanged?.Invoke(UserId, message);
+        //Debug.Log(RegisterData.username.ToString() + ": " + message);
     }
 
     private void OnPlayerWaypointClicked(WaypointHandler waypointHandler)
@@ -281,8 +349,7 @@ public class UserManager : MonoBehaviour
     {
         Debug.Log(_roomId);
         //Debug.Log("Chamou");
-        LoadWaypointHandlers(_roomId);
-        playerHandler.SetNewRoomLocation(waypoints[0]);
+        playerHandler.SetNewRoomLocation(waypoints[waypointsRoomOrigins[_roomId]]);
     }
 
     private void CreateMateHandler(string _userId, UserRuntimeData _userRuntimeData)
@@ -314,6 +381,10 @@ public class UserManager : MonoBehaviour
             FirebaseManager.instance.
                 RegisterUserRuntimeAttributeChangeValueEvent(userId, UserRuntimeAttribute.message,
                 mateHandler.OnMateMessageValueChanged);
+            FirebaseManager.instance.
+                RegisterWorldStateChangeValueEvent(OnWorldStateChanged);
+            FirebaseManager.instance.
+                RegisterWorldStateArgChangeValueEvent(OnWorldStateArgChanged);
         }
     }
 

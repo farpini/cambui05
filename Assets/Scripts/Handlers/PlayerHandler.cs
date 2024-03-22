@@ -9,6 +9,8 @@ public class PlayerHandler : ClientHandler
     public Transform headTransform;
     public Transform sitingTransform;
 
+    public Action<ButtonType> OnButtonClicked;
+
     public void Update ()
     {
         if (!isClientInitialized)
@@ -17,6 +19,7 @@ public class PlayerHandler : ClientHandler
         }
 
         CheckWaypointClick();
+        CheckButtonClick();
         CheckMovement();
         UpdatePosition();
         ChangeAnimator();
@@ -42,10 +45,36 @@ public class PlayerHandler : ClientHandler
 
             if (Physics.Raycast(ray, out var hitInfo, 1000f, layerMask))
             {
-                if (hitInfo.transform.gameObject.GetComponent<WaypointHandler>())
+                var waypointHandler = hitInfo.transform.gameObject.GetComponent<WaypointHandler>();
+                if (waypointHandler != null)
                 {
-                    var waypointHandler = hitInfo.transform.gameObject.GetComponent<WaypointHandler>();
+                    //var waypointHandler = hitInfo.transform.gameObject.GetComponent<WaypointHandler>();
                     OnWaypointClicked?.Invoke(waypointHandler);
+                }
+            }
+        }
+    }
+
+    private void CheckButtonClick()
+    {
+        if(registerData.tipo != "professor")
+        {
+            return;
+        }
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+            var layerMask = LayerMask.GetMask("Professor");
+
+            if (Physics.Raycast(ray, out var hitInfo, 1000f, layerMask))
+            {
+                var buttonHandler = hitInfo.transform.gameObject.GetComponent<ButtonHandler>();
+                if (buttonHandler != null)
+                {
+                    Debug.Log("Button: " +  buttonHandler.type);
+                    OnButtonClicked?.Invoke(buttonHandler.type);
                 }
             }
         }
