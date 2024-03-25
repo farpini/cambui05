@@ -475,7 +475,7 @@ public class FirebaseManager : MonoBehaviour
         return true;
     }
 
-    public void SetUsersLoggedFlag(bool flagValue)
+    /*public void SetUsersLoggedFlag(bool flagValue)
     {
         FirebaseDatabase.DefaultInstance
             .GetReference("usersLoggedFlag")
@@ -486,9 +486,9 @@ public class FirebaseManager : MonoBehaviour
                     Debug.LogError(task + ": failed to set users logged flag");
                 }
             });
-    }
+    }*/
 
-    public void GetUsersLoggedFlag(Action<bool> usersLoggedFlagCallback)
+    /*public void GetUsersLoggedFlag(Action<bool> usersLoggedFlagCallback)
     {
         FirebaseDatabase.DefaultInstance
             .GetReference("usersLoggedFlag")
@@ -503,9 +503,9 @@ public class FirebaseManager : MonoBehaviour
                     usersLoggedFlagCallback.Invoke(bool.Parse(task.Result.Value.ToString()));
                 }
             });
-    }
+    }*/
 
-    public bool RegisterUsersLoggedFlagChangeValueEvent(EventHandler<ValueChangedEventArgs> callback)
+    /*public bool RegisterUsersLoggedFlagChangeValueEvent(EventHandler<ValueChangedEventArgs> callback)
     {
         var dataRef = FirebaseDatabase.DefaultInstance
             .GetReference("usersLoggedFlag");
@@ -531,7 +531,7 @@ public class FirebaseManager : MonoBehaviour
 
         dataRef.ValueChanged -= callback;
         return true;
-    }
+    }*/
 
     public bool RegisterWorldStateChangeValueEvent(EventHandler<ValueChangedEventArgs> callback)
     {

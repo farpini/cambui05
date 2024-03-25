@@ -8,9 +8,6 @@ public abstract class ClientHandler : MonoBehaviour
     protected static Vector3 sitFixedDirection = Vector3.forward;
     protected static Vector3 professorFixedDirection = Vector3.back;
 
-    protected static WorldState CurrentWorldState;
-    protected static int CurrentWorldStateArg;
-
     protected WaypointHandler currentWaypoint;
 
     protected string userId;
@@ -52,16 +49,6 @@ public abstract class ClientHandler : MonoBehaviour
     public void SetPosition (Vector3 _position)
     {
         transform.position = _position;
-    }
-
-    public void SetWorldState (WorldState _state)
-    {
-        CurrentWorldState = _state;
-    }
-
-    public void SetWorldStateArg (int _stateArg)
-    {
-        CurrentWorldStateArg = _stateArg;
     }
 
     public void SetNewWaypoint (WaypointHandler waypointHandler)

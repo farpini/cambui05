@@ -12,12 +12,16 @@ using System.Runtime.Remoting.Metadata;
 using Unity.Mathematics;
 using UnityEditor.VersionControl;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.Analytics;
 using UnityEngine.XR.Interaction.Toolkit;
 
 public class UserManager : MonoBehaviour
 {
     public static UserManager instance;
+
+    protected static WorldState CurrentWorldState;
+    protected static int CurrentWorldStateArg;
 
     public PlayerHandler playerHandlerPrefab;
     public MateHandler mateHandlerPrefab;
@@ -27,9 +31,15 @@ public class UserManager : MonoBehaviour
     public XRInteractionManager XRManager;
     public GameObject transformToTest;
 
+    public List<ButtonHandler> buttons;
+
     public List<GameObject> floorWaypointHolder;
     public List<GameObject> deskWaypointHolder;
     public List<GameObject> doorWaypointHolder;
+
+    public RawImage boardImage;
+    public List<Texture> classImages;
+    private int classImagesIndex;
 
     private int[] waypointsRoomOrigins = new int[3];
 
@@ -66,6 +76,7 @@ public class UserManager : MonoBehaviour
 
     private void Start()
     {
+        SetXRButton();
         LoadWaypointHandlers();
         CreatePlayerHandler();
 
@@ -85,7 +96,6 @@ public class UserManager : MonoBehaviour
         }
 
         UpdateMatesLabel();
-
         /*
         if (Input.GetKeyDown(KeyCode.UpArrow))
         {
@@ -104,7 +114,24 @@ public class UserManager : MonoBehaviour
     {
         if (registeredToLoggedFlagChanged)
         {
-            FirebaseManager.instance.UnregisterUsersLoggedFlagChangeValueEvent(OnLoggedFlagChanged);
+            //FirebaseManager.instance.UnregisterUsersLoggedFlagChangeValueEvent(OnLoggedFlagChanged);
+        }
+    }
+
+    private void SetXRButton()
+    {
+        foreach (var button in buttons)
+        {
+            button.SetXRManager(XRManager);
+            button.OnButtonClicked = OnButtonClicked;
+        }
+    }
+
+    private void UpdateButton()
+    {
+        foreach (var button in buttons)
+        {
+            if (playerHandler.RegisterData.tipo == "aluno" && !button.waypointStudentAccess) button.gameObject.SetActive(false); 
         }
     }
 
@@ -175,7 +202,7 @@ public class UserManager : MonoBehaviour
 
         checkingClientLogged = true;
 
-        FirebaseManager.instance.RegisterUsersLoggedFlagChangeValueEvent(OnLoggedFlagChanged);
+        //FirebaseManager.instance.RegisterUsersLoggedFlagChangeValueEvent(OnLoggedFlagChanged);
 
         registeredToLoggedFlagChanged = true;
 
@@ -214,7 +241,7 @@ public class UserManager : MonoBehaviour
         yield return null;
 
         // set the player runtime data to the database, it will continue in OnPlayerUserRuntimeDataWrite
-        FirebaseManager.instance.SetUserRuntimeData(_userId, new UserRuntimeData(0, 0, ClientState.Idle, ""), OnPlayerUserRuntimeDataWrite);
+        //FirebaseManager.instance.SetUserRuntimeData(_userId, new UserRuntimeData(0, 0, ClientState.Idle, ""), OnPlayerUserRuntimeDataWrite);
     }
 
     private void OnPlayerUserRuntimeDataWrite(string _userId)
@@ -281,7 +308,7 @@ public class UserManager : MonoBehaviour
         }
     }
 
-    public void OnLoggedFlagChanged(object sender, ValueChangedEventArgs args)
+    /*public void OnLoggedFlagChanged(object sender, ValueChangedEventArgs args)
     {
         bool usersLoggedFlag = bool.Parse(args.Snapshot.Value.ToString());
 
@@ -303,7 +330,7 @@ public class UserManager : MonoBehaviour
                 hasClientLogged = true;
             }
         }
-    }
+    }*/
 
     private void UpdatePlayerHandler(string _userId, UserRuntimeData _userRuntimeData)
     {
@@ -320,8 +347,21 @@ public class UserManager : MonoBehaviour
         //playerHandler.SetCamera(true, true);
         //playerHandler.OnWaypointClicked = OnPlayerWaypointClicked;
         playerHandler.OnRoomChange = OnRoomChange;
-        playerHandler.OnButtonClicked = OnButtonClicked;
+        //playerHandler.OnButtonClicked = OnButtonClicked;
         playerHandler.InitializeClient();
+        UpdateButton();
+    }
+
+    private void SetWorldState(WorldState worldState)
+    {
+        CurrentWorldState = worldState;
+        if(worldState == WorldState.InClass) boardImage.gameObject.SetActive(true);
+    }
+
+    private void SetWorldStateArg(int worldStateArg)
+    {
+        CurrentWorldStateArg = worldStateArg;
+        boardImage.texture = classImages[classImagesIndex];
     }
 
     private void OnButtonClicked(ButtonType type)
@@ -345,33 +385,39 @@ public class UserManager : MonoBehaviour
     private void ProfessorStartClass()
     {
         FirebaseManager.instance.SetWorldState(WorldState.InClass);
-        playerHandler.SetWorldState(WorldState.InClass);
+        SetWorldState(WorldState.InClass);
     }
 
     private void ProfessorNextClick()
     {
-        FirebaseManager.instance.SetWorldStateArg(1);
-        playerHandler.SetWorldStateArg(1);
+        if(classImagesIndex >= 0 && classImagesIndex < classImages.Count - 1)
+        {
+            FirebaseManager.instance.SetWorldStateArg(classImagesIndex++);
+            SetWorldStateArg(classImagesIndex++);
+        }
     }
 
     private void ProfessorPreviousClick()
     {
-        FirebaseManager.instance.SetWorldStateArg(0);
-        playerHandler.SetWorldStateArg(0);
+        if(classImagesIndex > 0) 
+        {
+            FirebaseManager.instance.SetWorldStateArg(classImagesIndex--);
+            SetWorldStateArg(classImagesIndex--);
+        }
     }
 
     private void OnWorldStateChanged(object sender, ValueChangedEventArgs args)
     {
         var message = args.Snapshot.Value.ToString();
         WorldState state = (WorldState)Enum.Parse(typeof(WorldState), message);
-        playerHandler.SetWorldState(state);
+        SetWorldState(state);
     }
 
     private void OnWorldStateArgChanged(object sender, ValueChangedEventArgs args)
     {
         var message = args.Snapshot.Value.ToString();
         int stateArg = int.Parse(message);
-        playerHandler.SetWorldStateArg(stateArg);
+        SetWorldStateArg(stateArg);
     }
 
     private void OnPlayerWaypointClicked (WaypointHandler waypointHandler)

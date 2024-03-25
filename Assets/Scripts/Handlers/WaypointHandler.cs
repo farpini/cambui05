@@ -9,9 +9,6 @@ public abstract class WaypointHandler : InteractionHandler
     [SerializeField] protected WaypointType waypointType;
     protected int waypointIndex;
 
-    public bool waypointProfessorAccess;
-    public bool waypointStudentAccess;
-
     public WaypointType WaypointType => waypointType;
 
     public Action<WaypointHandler> OnWaypointSelected;

@@ -7,6 +7,8 @@ public abstract class InteractionHandler : MonoBehaviour
 {
     [SerializeField] protected XRSimpleInteractable XRInter;
     [SerializeField] protected InteractionType interactionType;
+    public bool waypointProfessorAccess;
+    public bool waypointStudentAccess;
 
     public void SetXRManager (XRInteractionManager xrmanager)
     {
