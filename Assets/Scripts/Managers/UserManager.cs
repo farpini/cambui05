@@ -254,6 +254,11 @@ public class UserManager : MonoBehaviour
     {
         Debug.LogWarning("OnAllUsersRuntimeDataRead EXECUTED");
 
+        foreach(var door in doorWaypointHolder)
+        {
+            door.gameObject.SetActive(true);
+        }
+
         foreach (var client in usersDictionary)
         {
             var clientUserId = client.Key;
