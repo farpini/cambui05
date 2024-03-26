@@ -149,13 +149,14 @@ public abstract class ClientHandler : MonoBehaviour
         }
     }
 
+    /*
     public void SetNewRoomLocation(WaypointHandler waypoint) 
     { 
         currentWaypoint = waypoint;
         runtimeData.state = ClientState.Idle.ToString();
         SetPosition(waypoint.transform.position);
         OnWaypointClicked?.Invoke(waypoint);
-    }  
+    }  */
 
     public virtual void SetCamera (bool isStand, bool initRotation = false)
     {

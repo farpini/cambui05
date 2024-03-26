@@ -346,7 +346,7 @@ public class UserManager : MonoBehaviour
         playerHandler.SetPosition(waypoints[0].transform.position);
         //playerHandler.SetCamera(true, true);
         //playerHandler.OnWaypointClicked = OnPlayerWaypointClicked;
-        playerHandler.OnRoomChange = OnRoomChange;
+        //playerHandler.OnRoomChange = OnRoomChange;
         //playerHandler.OnButtonClicked = OnButtonClicked;
         playerHandler.InitializeClient();
         UpdateButton();
@@ -361,6 +361,7 @@ public class UserManager : MonoBehaviour
     private void SetWorldStateArg(int worldStateArg)
     {
         CurrentWorldStateArg = worldStateArg;
+        classImagesIndex = CurrentWorldStateArg;
         boardImage.texture = classImages[classImagesIndex];
     }
 
@@ -392,8 +393,9 @@ public class UserManager : MonoBehaviour
     {
         if(classImagesIndex >= 0 && classImagesIndex < classImages.Count - 1)
         {
-            FirebaseManager.instance.SetWorldStateArg(classImagesIndex++);
-            SetWorldStateArg(classImagesIndex++);
+            classImagesIndex++;
+            FirebaseManager.instance.SetWorldStateArg(classImagesIndex);
+            SetWorldStateArg(classImagesIndex);
         }
     }
 
@@ -401,8 +403,9 @@ public class UserManager : MonoBehaviour
     {
         if(classImagesIndex > 0) 
         {
-            FirebaseManager.instance.SetWorldStateArg(classImagesIndex--);
-            SetWorldStateArg(classImagesIndex--);
+            classImagesIndex--;
+            FirebaseManager.instance.SetWorldStateArg(classImagesIndex);
+            SetWorldStateArg(classImagesIndex);
         }
     }
 
@@ -429,13 +432,6 @@ public class UserManager : MonoBehaviour
 
         FirebaseManager.instance.SetUserRuntimeAttribute(playerHandler.UserId, UserRuntimeAttribute.waypoint, waypointHandler.WaypointIndex);
         OnClientWaypointChanged(playerHandler.UserId, waypointHandler.WaypointIndex);
-    }
-
-    private void OnRoomChange(int _roomId)
-    {
-        Debug.Log(_roomId);
-        //Debug.Log("Chamou");
-        playerHandler.SetNewRoomLocation(waypoints[waypointsRoomOrigins[_roomId]]);
     }
 
     private void CreateMateHandler(string _userId, UserRuntimeData _userRuntimeData)
@@ -496,17 +492,34 @@ public class UserManager : MonoBehaviour
 
         if (userId == playerHandler.UserId)
         {
-            playerHandler.SetNewWaypoint(waypoints[waypointValue]);
+            var waypoint = waypoints[waypointValue];
+
+            if (waypoints[waypointValue].WaypointType == WaypointType.Door)
+            {
+                waypoint = waypoints[waypointsRoomOrigins[1]];
+                playerHandler.SetPosition(waypoint.transform.position);
+            }
+
+            playerHandler.SetNewWaypoint(waypoint);
         }
         else
         {
             var mateHandler = GetMateHandler(userId);
             if (mateHandler != null)
             {
-                mateHandler.SetNewWaypoint(waypoints[waypointValue]);
+                var waypoint = waypoints[waypointValue];
+
+                if (waypoints[waypointValue].WaypointType == WaypointType.Door)
+                {
+                    waypoint = waypoints[waypointsRoomOrigins[1]];
+                    mateHandler.SetPosition(waypoint.transform.position);
+                }
+
+                mateHandler.SetNewWaypoint(waypoint);
             }
         }
     }
+
 
     private void UpdateMatesLabel()
     {
