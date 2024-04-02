@@ -41,7 +41,7 @@ public class UserManager : MonoBehaviour
     public List<Texture> classImages;
     private int classImagesIndex;
 
-    private int[] waypointsRoomOrigins = new int[3];
+    public int[] waypointsRoomOrigins = new int[3];
 
     public PlayerHandler playerHandler;
     private List<MateHandler> mateHandlers;
@@ -501,7 +501,7 @@ public class UserManager : MonoBehaviour
 
             if (waypoints[waypointValue].WaypointType == WaypointType.Door)
             {
-                waypoint = waypoints[waypointsRoomOrigins[1]];
+                waypoint = waypoints[waypointsRoomOrigins[waypoints[waypointValue].GetComponent<DoorHandler>().roomIndex]];
                 playerHandler.SetPosition(waypoint.transform.position);
             }
 
@@ -516,7 +516,7 @@ public class UserManager : MonoBehaviour
 
                 if (waypoints[waypointValue].WaypointType == WaypointType.Door)
                 {
-                    waypoint = waypoints[waypointsRoomOrigins[1]];
+                    waypoint = waypoints[waypointsRoomOrigins[waypoints[waypointValue].GetComponent<DoorHandler>().roomIndex]];
                     mateHandler.SetPosition(waypoint.transform.position);
                 }
 
