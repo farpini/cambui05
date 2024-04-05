@@ -7,9 +7,13 @@ using UnityEngine.XR.Interaction.Toolkit;
 public abstract class WaypointHandler : InteractionHandler
 {
     [SerializeField] protected WaypointType waypointType;
+    [SerializeField] protected bool waypointForceDirection = false;
+    [SerializeField] protected Vector3 waypointEnterDirection = Vector3.zero;
     protected int waypointIndex;
 
     public WaypointType WaypointType => waypointType;
+    public bool WaypointForceDirection => waypointForceDirection;
+    public Vector3 WaypointEnterDirection => waypointEnterDirection;
 
     public Action<WaypointHandler> OnWaypointSelected;
 

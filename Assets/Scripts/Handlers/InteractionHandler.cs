@@ -14,6 +14,14 @@ public abstract class InteractionHandler : MonoBehaviour
     {
         XRInter.interactionManager = xrmanager;
     }
+
+    public virtual void OnUnselect () 
+    { 
+    }
+
+    public virtual void OnSelect ()
+    {
+    }
 }
 
 public enum InteractionType

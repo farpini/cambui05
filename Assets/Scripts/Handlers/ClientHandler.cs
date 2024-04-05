@@ -4,9 +4,7 @@ using UnityEngine;
 
 public abstract class ClientHandler : MonoBehaviour
 {
-    protected static float movementSpeed = 0.01f;
-    protected static Vector3 sitFixedDirection = Vector3.forward;
-    protected static Vector3 professorFixedDirection = Vector3.back;
+    protected static float movementSpeed = 0.02f;
 
     protected WaypointHandler currentWaypoint;
 
@@ -15,6 +13,8 @@ public abstract class ClientHandler : MonoBehaviour
     protected UserRuntimeData runtimeData;
 
     protected bool isClientInitialized = false;
+
+    protected Transform lookTransform;
 
     public string UserId => userId;
     public UserRegisterData RegisterData => registerData;
@@ -94,7 +94,16 @@ public abstract class ClientHandler : MonoBehaviour
             {
                 transform.position = targetPosition;
                 OnWaypointPositionReached();
+
+                Debug.Log("REACHED");
+
+                if (currentWaypoint.WaypointForceDirection && lookTransform != null)
+                {
+                    lookTransform.rotation = Quaternion.LookRotation(currentWaypoint.WaypointEnterDirection);
+                }
             }
+
+            
         }
         else
         {
@@ -119,9 +128,6 @@ public abstract class ClientHandler : MonoBehaviour
             //animator.SetInteger("stateValue", 2);
             runtimeData.state = ClientState.Sit.ToString();
 
-            // set the direction to the class board
-            transform.rotation = Quaternion.LookRotation(sitFixedDirection);
-
             SetCamera(false);
         }
         else if (currentWaypoint.WaypointType == WaypointType.Floor)
@@ -129,13 +135,6 @@ public abstract class ClientHandler : MonoBehaviour
             //animator.SetInteger("stateValue", 0);
 
             runtimeData.state = ClientState.Idle.ToString();
-
-            // this is temporary, waypoint index (1) represents the professor position to start the class
-            // so set it's direction to be straight to the students
-            //if (currentWaypoint.WaypointIndex == 1)
-            //{
-            //    transform.rotation = Quaternion.LookRotation(professorFixedDirection);
-            //}
 
             SetCamera(true);
         }

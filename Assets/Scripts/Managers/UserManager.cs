@@ -27,6 +27,7 @@ public class UserManager : MonoBehaviour
     public MateHandler mateHandlerPrefab;
 
     public GameObject XRGO;
+    public GameObject XRCameraOffsetGO;
     public GameObject XRSimulatorGO;
     public XRInteractionManager XRManager;
     public GameObject transformToTest;
@@ -189,7 +190,7 @@ public class UserManager : MonoBehaviour
     private void CreatePlayerHandler()
     {
         playerHandler = Instantiate(playerHandlerPrefab);
-        playerHandler.SetXRGO(XRGO);
+        playerHandler.SetXRGO(XRGO, XRCameraOffsetGO);
         playerHandler.SetPosition(waypoints[0].transform.position);
         //playerHandler.SetPosition(transformToTest.transform.position);
     }
@@ -360,7 +361,7 @@ public class UserManager : MonoBehaviour
     private void SetWorldState(WorldState worldState)
     {
         CurrentWorldState = worldState;
-        if(worldState == WorldState.InClass) boardImage.gameObject.SetActive(true);
+        if(worldState == WorldState.ClassStarted) boardImage.gameObject.SetActive(true);
     }
 
     private void SetWorldStateArg(int worldStateArg)
@@ -390,8 +391,8 @@ public class UserManager : MonoBehaviour
 
     private void ProfessorStartClass()
     {
-        FirebaseManager.instance.SetWorldState(WorldState.InClass);
-        SetWorldState(WorldState.InClass);
+        FirebaseManager.instance.SetWorldState(WorldState.ClassStarted);
+        SetWorldState(WorldState.ClassStarted);
     }
 
     private void ProfessorNextClick()

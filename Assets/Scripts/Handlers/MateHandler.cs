@@ -19,6 +19,12 @@ public class MateHandler : ClientHandler
     public Action<string, int> OnMateWaypointChanged;
     public Action<string, string> OnMateMessageChanged;
 
+
+    public void Awake ()
+    {
+        lookTransform = transform;
+    }
+
     public void Update ()
     {
         if (!isClientInitialized)

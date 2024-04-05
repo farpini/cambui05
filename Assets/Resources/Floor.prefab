@@ -31,7 +31,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 1.01, y: 0, z: 0.67}
-  m_LocalScale: {x: 0.8, y: 0.1, z: 0.8}
+  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -50,10 +50,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   XRInter: {fileID: 2946455170238795821}
   interactionType: 0
-  waypointType: 0
   waypointProfessorAccess: 1
   waypointStudentAccess: 1
+  waypointType: 0
   floorIndex: 0
+  floorSelectedColor: {r: 0.48584908, g: 0.8467629, b: 1, a: 0.5019608}
+  floorDefaultColor: {r: 1, g: 1, b: 1, a: 0.5019608}
+  floorMeshRenderer: {fileID: 6831299429581018149}
 --- !u!33 &7344750755381937796
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -61,7 +64,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5037839433182521757}
-  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: 1865056248366311061, guid: be2911572dc3afa448d24b4e97edc5f1, type: 3}
 --- !u!23 &6831299429581018149
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -82,7 +85,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e791b5a738492d94e9fdc83a4a717638, type: 2}
+  - {fileID: -876546973899608171, guid: 30a5a4ad15bb5344b93f10d8ecd21aea, type: 3}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -123,7 +126,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
+  m_Size: {x: 1.2, y: 1.2, z: 0.4}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &2946455170238795821
 MonoBehaviour:
@@ -164,10 +167,34 @@ MonoBehaviour:
       m_Calls: []
   m_HoverEntered:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 7023312892010802857}
+        m_TargetAssemblyTypeName: FloorHandler, Assembly-CSharp
+        m_MethodName: OnSelect
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_HoverExited:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 7023312892010802857}
+        m_TargetAssemblyTypeName: FloorHandler, Assembly-CSharp
+        m_MethodName: OnUnselect
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_FirstSelectEntered:
     m_PersistentCalls:
       m_Calls: []

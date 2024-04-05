@@ -9,7 +9,10 @@ public class PlayerHandler : ClientHandler
     public Transform headTransform;
     public Transform sitingTransform;
 
+    private Transform oculusTransform;
+
     public Action<ButtonType> OnButtonClicked;
+
 
     public void Update ()
     {
@@ -25,17 +28,24 @@ public class PlayerHandler : ClientHandler
 
     public override void SetCamera (bool isStand, bool initRotation = false)
     {
-        Camera.main.transform.SetParent(isStand ? headTransform : sitingTransform);
-        Camera.main.transform.localPosition = Vector3.zero;
+        if (oculusTransform == null)
+        {
+            return;
+        }
+
+        oculusTransform.SetParent(isStand ? headTransform : sitingTransform, false);
+        oculusTransform.localPosition = Vector3.zero;
         if (initRotation)
         {
-            Camera.main.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
+            oculusTransform.localEulerAngles = new Vector3(0f, 0f, 0f);
         }
     }
 
-    public void SetXRGO (GameObject xrgo)
+    public void SetXRGO (GameObject xrgo, GameObject cameraOffSet)
     {
-        xrgo.transform.SetParent(headTransform, false);
+        oculusTransform = xrgo.transform;
+        lookTransform = cameraOffSet.transform;
+        SetCamera(true);
     }
 
     private void CheckButtonClick()

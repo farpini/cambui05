@@ -615,8 +615,3 @@ public class FirebaseManager : MonoBehaviour
             });
     }
 }
-
-public enum WorldState
-{
-    Start, InClass
-}

@@ -49,9 +49,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   XRInter: {fileID: 7609927693747737316}
   interactionType: 0
-  waypointType: 1
   waypointProfessorAccess: 0
   waypointStudentAccess: 1
+  waypointType: 1
   deskIndex: 0
 --- !u!65 &1875308159877423409
 BoxCollider:
@@ -72,8 +72,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 1.5, z: 0}
+  m_Size: {x: 2, y: 2, z: 3}
+  m_Center: {x: 0, y: 1.5, z: 1}
 --- !u!114 &7609927693747737316
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -206,7 +206,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &3812336244330025632
 Transform:
   m_ObjectHideFlags: 0
@@ -271,4 +271,4 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4054693671945442452}
-  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: -5763521393714354701, guid: 00b231d1d3a0cc64bad4defab962c44f, type: 3}

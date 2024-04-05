@@ -123,3 +123,33 @@ public enum ClientStatus
 {
     offline, online
 }
+
+public enum WorldState
+{
+    WaitingOnClassRoom, ClassStarted, WaitingOnPracticeRoom, PracticeStarted, QuizStarted, QuizFinished
+}
+
+// WaitingOnClassRoom
+// 0- "Faça o login para acesso as aulas"
+// 1- "Dirige-se para a sala de aula"
+// 2- "Aguarde o professor começar a aula"
+
+// ClassStarted
+// 0- "A aula começou"
+// 1- "...."
+// 2- "...."
+// n- "Dirige-se para a sala prática"
+
+
+// bool msgToStudent
+// string msg = ""
+// float msgDuration
+
+public class WorldStateData
+{
+    public WorldState state;
+    public int stateArg;
+    public string stateMsg;
+    public bool stateMsgToShow;
+    public float stateMsgDuration;
+}
