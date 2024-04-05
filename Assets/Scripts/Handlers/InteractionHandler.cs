@@ -26,5 +26,5 @@ public abstract class InteractionHandler : MonoBehaviour
 
 public enum InteractionType
 {
-    Waypoint, Button
+    Waypoint, Button, Object
 }
