@@ -46,6 +46,10 @@ public class UIManager : MonoBehaviour
     public Button adminRegisterButton;
     public Button adminBackButton;
 
+    [Header("BottomPanel")]
+    public GameObject panelObject;
+    public TMP_Text msgText;
+
 
     private void Awake()
     {
@@ -62,6 +66,7 @@ public class UIManager : MonoBehaviour
 
         OpenLoginUI();
 
+        panelObject.SetActive(false);
         toggleMale.isOn = true;
         toggleFemale.isOn = false;
         toggleProfessor.isOn = true;
@@ -104,6 +109,8 @@ public class UIManager : MonoBehaviour
         FirebaseManager.instance.OnLoginPrintResult += PrintLoginResult;
         FirebaseManager.instance.OnUserRegisterPrintResult += PrintUserRegisterResult;
         FirebaseManager.instance.OnAdminRegisterPrintResult += PrintAdminRegisterResult;
+
+        UserManager.instance.OnWorldStateDataChanged += ShowWorldStateMessage;
     }
 
     private void OnDestroy ()
@@ -343,5 +350,28 @@ public class UIManager : MonoBehaviour
         NonNativeKeyboard.Instance.RepositionKeyboard(targetPosition);
     }
 
+    private void ShowWorldStateMessage (WorldState worldState, StateData stateData)
+    {
+        if (stateData.stateMsgToShow)
+        {
+            panelObject.SetActive(true);
+            msgText.text = stateData.stateMsg;
+            if (stateData.stateMsgDuration < 1f)
+            {
+                return;
+            }
 
+            StartCoroutine(CountDownToHideMessage(stateData.stateMsgDuration));
+        }
+        else
+        {
+            panelObject.SetActive(false);
+        }
+    }
+
+    private IEnumerator CountDownToHideMessage (float messageDuration)
+    {
+        yield return new WaitForSeconds(messageDuration);
+        panelObject.SetActive(false);
+    }
 }

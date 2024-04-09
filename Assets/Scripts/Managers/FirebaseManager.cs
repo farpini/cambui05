@@ -81,6 +81,23 @@ public class FirebaseManager : MonoBehaviour
             });
     }
 
+    public void GetUserRuntimeAttributeWithUserIdReturned (string userId, UserRuntimeAttribute userAttribute, Action<string, string> userAttributeCallback)
+    {
+        FirebaseDatabase.DefaultInstance
+            .GetReference("usersConnected/" + userId + "/" + userAttribute.ToString())
+            .GetValueAsync().ContinueWithOnMainThread(task =>
+            {
+                if (task.IsFaulted)
+                {
+                    Debug.LogError(task + ": failed to get runtime attribute.");
+                }
+                else if (task.IsCompleted)
+                {
+                    userAttributeCallback.Invoke(task.Result.Value.ToString(), userId);
+                }
+            });
+    }
+
     public void SetUserRuntimeAttribute<T>(string userId, UserRuntimeAttribute userAttribute, T userValue)
     {
         FirebaseDatabase.DefaultInstance
@@ -415,6 +432,38 @@ public class FirebaseManager : MonoBehaviour
                    _userRuntimeDataCallback.Invoke(_userId);
                }
            });
+    }
+
+    public void SetWorldStateData (WorldState _stateType, StateData[] _worldStateData)
+    {
+        var json = JsonConvert.SerializeObject(_worldStateData);
+
+        FirebaseDatabase.DefaultInstance
+           .GetReference("worldStateData/" + _stateType.ToString() + "/")
+           .SetRawJsonValueAsync(json).ContinueWithOnMainThread(task =>
+           {
+               if (task.IsFaulted)
+               {
+                   Debug.LogError(task + ": failed to set the user runtime data");
+               }
+               else if (task.IsCompleted)
+               {
+                   //_userRuntimeDataCallback.Invoke(_userId);
+               }
+           });
+    }
+
+    public IEnumerator GetAllWorldStateData (Action<Dictionary<string, StateData[]>> _worldStateData)
+    {
+        var task = FirebaseDatabase.DefaultInstance
+           .GetReference("worldStateData/")
+           .GetValueAsync();
+
+        yield return new WaitUntil(predicate: () => task.IsCompleted);
+
+        DataSnapshot snapshot = task.Result;
+        string json = snapshot.GetRawJsonValue();
+        _worldStateData.Invoke(JsonConvert.DeserializeObject<Dictionary<string, StateData[]>>(json));
     }
 
     public void GetUsersConnectedCount(Action<int> usersConnectedCountCallback)

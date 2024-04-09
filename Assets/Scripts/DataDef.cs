@@ -82,13 +82,15 @@ public class UserRuntimeData
     public string roomId;
     public string state;
     public string message;
+    public string epiId;
 
-    public UserRuntimeData(int _w, int _rid, ClientState _cs, string _message)
+    public UserRuntimeData(int _w, int _rid, ClientState _cs, string _message, int _epiId)
     {
         waypoint = _w.ToString();
         roomId = _rid.ToString();
         state = _cs.ToString();
         message = _message;
+        epiId = _epiId.ToString();
     }
 }
 
@@ -106,7 +108,7 @@ public enum UserRegisterAttribute
 
 public enum UserRuntimeAttribute
 {
-    waypoint, roomId, state, message
+    waypoint, roomId, state, message, epiId
 }
 
 public enum ClientGender
@@ -145,11 +147,17 @@ public enum WorldState
 // string msg = ""
 // float msgDuration
 
-public class WorldStateData
+
+[Serializable]
+public class StateData 
 {
-    public WorldState state;
-    public int stateArg;
     public string stateMsg;
     public bool stateMsgToShow;
     public float stateMsgDuration;
+}
+
+[Serializable]
+public class StudentQuizData
+{
+    public string[] epiIds;
 }

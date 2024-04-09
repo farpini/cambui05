@@ -7,6 +7,7 @@ public abstract class ClientHandler : MonoBehaviour
     protected static float movementSpeed = 0.02f;
 
     protected WaypointHandler currentWaypoint;
+    protected ObjectHandler currentObject;
 
     protected string userId;
     protected UserRegisterData registerData;
@@ -20,6 +21,8 @@ public abstract class ClientHandler : MonoBehaviour
     public UserRegisterData RegisterData => registerData;
     public UserRuntimeData RuntimeData => runtimeData;
     public bool IsClientInitialized => isClientInitialized;
+    public WaypointHandler CurrentWaypoint => currentWaypoint;
+    public ObjectHandler CurrentObject => currentObject;
 
     public Action<int> OnRoomChange;
     public Action<WaypointHandler> OnWaypointClicked;
@@ -49,6 +52,17 @@ public abstract class ClientHandler : MonoBehaviour
     public void SetPosition (Vector3 _position)
     {
         transform.position = _position;
+    }
+
+    public void SetObjectHandler (ObjectHandler objectHandler)
+    {
+        if (currentObject != null)
+        {
+            Debug.LogWarning("Ja tem objecto na mao");
+            return;
+        }
+
+        currentObject = objectHandler;
     }
 
     public void SetNewWaypoint (WaypointHandler waypointHandler)
