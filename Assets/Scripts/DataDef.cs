@@ -128,7 +128,7 @@ public enum ClientStatus
 
 public enum WorldState
 {
-    WaitingOnClassRoom, ClassStarted, WaitingOnPracticeRoom, PracticeStarted, QuizStarted, QuizFinished
+    WaitingOnClassRoom, ClassStarted, QuizStarted
 }
 
 // WaitingOnClassRoom

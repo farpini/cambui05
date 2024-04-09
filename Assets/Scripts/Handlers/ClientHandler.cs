@@ -56,12 +56,6 @@ public abstract class ClientHandler : MonoBehaviour
 
     public void SetObjectHandler (ObjectHandler objectHandler)
     {
-        if (currentObject != null)
-        {
-            Debug.LogWarning("Ja tem objecto na mao");
-            return;
-        }
-
         currentObject = objectHandler;
     }
 

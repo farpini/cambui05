@@ -461,12 +461,12 @@ public class UserManager : MonoBehaviour
 
     private void OnButtonClicked(ButtonType type)
     {
-        if (CurrentWorldState == WorldState.QuizStarted)
+        if (CurrentWorldState == WorldState.WaitingOnClassRoom)
         {
             switch (type)
             {
                 case ButtonType.Next:
-                ProfessorQuizQuestionClicked();
+                //ProfessorQuizQuestionClicked();
                 break;
                 case ButtonType.Start:
                 ProfessorStartQuiz();
@@ -478,6 +478,25 @@ public class UserManager : MonoBehaviour
                 break;
             }
         }
+        else if (CurrentWorldState == WorldState.QuizStarted)
+        {
+            switch (type)
+            {
+                case ButtonType.Next:
+                ProfessorQuizQuestionClicked();
+                break;
+                case ButtonType.Start:
+                //ProfessorStartQuiz();
+                break;
+                case ButtonType.Previous:
+                //ProfessorPreviousClick();
+                break;
+                default:
+                break;
+            }
+        }
+
+
 
         /*
         switch (type)
@@ -525,6 +544,8 @@ public class UserManager : MonoBehaviour
 
     private void ProfessorStartQuiz ()
     {
+        ClearAllStudentEpiId();
+
         quizIndex = 0;
 
         FirebaseManager.instance.SetWorldState(WorldState.QuizStarted);
@@ -535,22 +556,53 @@ public class UserManager : MonoBehaviour
 
     private void ProfessorQuizQuestionClicked ()
     {
-        ClearAllStudentEpiId();
-        
-        if (CurrentWorldStateArg > 1)
-        {
-            foreach (var studentData in stundentQuizData)
-            {
-                FirebaseManager.instance.GetUserRuntimeAttributeWithUserIdReturned(
-                    studentData.Key, UserRuntimeAttribute.epiId, ReadStudentEpiId);
-            }
-
-            quizIndex++;
-        }
-
         CurrentWorldStateArg++;
         FirebaseManager.instance.SetWorldStateArg(CurrentWorldStateArg);
         SetWorldStateArg(CurrentWorldStateArg);
+
+        if (CurrentWorldStateArg > 1)
+        {
+            Debug.LogWarning("Leu");
+            StartCoroutine(FirebaseManager.instance.GetAllUsersRuntimeData(OnAllUsersRuntimeDataReadForQuiz));
+            return;
+        }
+
+        ClearAllStudentEpiId();
+    }
+
+    private void OnAllUsersRuntimeDataReadForQuiz (Dictionary<string, UserRuntimeData> usersDictionary)
+    {
+        foreach (var userData in usersDictionary)
+        {
+            if (userData.Key != playerHandler.UserId)
+            {
+                stundentQuizData[userData.Key].epiIds[quizIndex] = userData.Value.epiId;
+            }
+        }
+
+        Debug.LogWarning("Leu banco");
+
+        quizIndex++;
+
+        if (CurrentWorldStateArg == 4)
+        {
+            PrintQuizResult();
+            return;
+        }
+
+        ClearAllStudentEpiId();
+    }
+
+    private void PrintQuizResult ()
+    {
+        foreach (var studentData in stundentQuizData)
+        {
+            Debug.Log("Estudante: " + studentData.Key + " resultado:");
+            for (int i = 0; i < studentData.Value.epiIds.Length; i++)
+            {
+                Debug.Log("Pergunta " + i + ": valor " + studentData.Value.epiIds[i]);
+            }
+        }
     }
 
     private void ReadStudentEpiId (string epiId, string userId)
@@ -727,14 +779,27 @@ public class UserManager : MonoBehaviour
 
     private void PrintWorldStateMessage ()
     {
-        if (WorldStateDict[CurrentWorldState.ToString()].Length > CurrentWorldStateArg)
+        if (WorldStateDict.TryGetValue(CurrentWorldState.ToString(), out var stateData))
         {
-            OnWorldStateDataChanged?.Invoke(CurrentWorldState, WorldStateDict[CurrentWorldState.ToString()][CurrentWorldStateArg]);
+            if (stateData.Length > CurrentWorldStateArg)
+            {
+                OnWorldStateDataChanged?.Invoke(CurrentWorldState, stateData[CurrentWorldStateArg]);
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Not present in dict.");
         }
     }
 
     private void OnObjectPicked (ObjectHandler obj)
     {
+        if (playerHandler.CurrentObject != null)
+        {
+            Debug.LogWarning("Ja tem objecto na mao");
+            return;
+        }
+
         playerHandler.SetObjectHandler(obj);
     }
 
@@ -742,8 +807,11 @@ public class UserManager : MonoBehaviour
     {
         if (playerHandler.CurrentObject == null)
         {
+            Debug.LogWarning("Cannot drop null object.");
             return new DropData { transformToDrop = null, dropOnOrigin = true };
         }
+
+        playerHandler.SetObjectHandler(null);
 
         if (playerHandler.CurrentWaypoint.Equals(waypointToDropEPI))
         {

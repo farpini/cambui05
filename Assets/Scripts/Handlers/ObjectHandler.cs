@@ -46,7 +46,7 @@ public class ObjectHandler : InteractionHandler
     private IEnumerator DestroyObjectOnSeconds (float duration)
     {
         yield return new WaitForSeconds(duration);
-        Destroy(this);
+        Destroy(gameObject);
     }
 }
 

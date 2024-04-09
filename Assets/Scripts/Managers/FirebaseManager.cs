@@ -81,22 +81,18 @@ public class FirebaseManager : MonoBehaviour
             });
     }
 
-    public void GetUserRuntimeAttributeWithUserIdReturned (string userId, UserRuntimeAttribute userAttribute, Action<string, string> userAttributeCallback)
+    /*
+    public IEnumerator GetUserRuntimeAttributeWithUserIdReturned (string userId, UserRuntimeAttribute userAttribute, Action<string, string> userAttributeCallback)
     {
-        FirebaseDatabase.DefaultInstance
+        var task = FirebaseDatabase.DefaultInstance
             .GetReference("usersConnected/" + userId + "/" + userAttribute.ToString())
-            .GetValueAsync().ContinueWithOnMainThread(task =>
-            {
-                if (task.IsFaulted)
-                {
-                    Debug.LogError(task + ": failed to get runtime attribute.");
-                }
-                else if (task.IsCompleted)
-                {
-                    userAttributeCallback.Invoke(task.Result.Value.ToString(), userId);
-                }
-            });
+        .GetValueAsync();
+
+        yield return new WaitUntil(predicate: () => task.IsCompleted);
+
+        userAttributeCallback.Invoke(task.Result.Value.ToString(), userId);
     }
+    */
 
     public void SetUserRuntimeAttribute<T>(string userId, UserRuntimeAttribute userAttribute, T userValue)
     {
