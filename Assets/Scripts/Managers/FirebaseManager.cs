@@ -23,6 +23,8 @@ public class FirebaseManager : MonoBehaviour
 
     private string currentUserId = "";
 
+    public Action OnFirebaseInitialized;
+
     public Action<string> OnLoginSuccess;
     public Action<string> OnLoginMissing;
 
@@ -40,9 +42,12 @@ public class FirebaseManager : MonoBehaviour
         {
             instance = this;
         }
+    }
 
+    private void Start ()
+    {
         //Check that all of the necessary dependencies for Firebase are present on the system
-        FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task =>
+        FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
         {
             dependencyStatus = task.Result;
             if (dependencyStatus == DependencyStatus.Available)
@@ -59,9 +64,8 @@ public class FirebaseManager : MonoBehaviour
 
     private void InitializeFirebase()
     {
-        Debug.Log("Configurando o Firebase Auth");
-        //Set the authentication instance object
         authAPI = FirebaseAuth.DefaultInstance;
+        OnFirebaseInitialized?.Invoke();
     }
 
     public void GetUserRuntimeAttribute(string userId, UserRuntimeAttribute userAttribute, Action<string> userAttributeCallback)
@@ -663,6 +667,7 @@ public class FirebaseManager : MonoBehaviour
     public void ClearUserConnectedData()
     {
         SetUsersConnectedCount(0);
+        SetQuizText("");
         FirebaseDatabase.DefaultInstance.GetReference("usersConnected").RemoveValueAsync();
     }
 
@@ -697,6 +702,66 @@ public class FirebaseManager : MonoBehaviour
     {
         var dataRef = FirebaseDatabase.DefaultInstance
             .GetReference("quizResultText");
+
+        if (dataRef == null)
+        {
+            return false;
+        }
+
+        dataRef.ValueChanged -= callback;
+        return true;
+    }
+
+    public void SetWorldSettingsData (WorldSettings _worldSettings)
+    {
+        var json = JsonConvert.SerializeObject(_worldSettings);
+
+        FirebaseDatabase.DefaultInstance
+           .GetReference("worldSettings/")
+           .SetRawJsonValueAsync(json).ContinueWithOnMainThread(task =>
+           {
+               if (task.IsFaulted)
+               {
+                   Debug.LogError(task + ": failed to set the world settings data");
+               }
+               else if (task.IsCompleted)
+               {
+                   //_userRuntimeDataCallback.Invoke(_userId);
+               }
+           });
+    }
+
+    public IEnumerator GetWorldSettingsData (Action<WorldSettings> _worldSettingsDataCallback)
+    {
+        var task = FirebaseDatabase.DefaultInstance
+           .GetReference("worldSettings/")
+           .GetValueAsync();
+
+        yield return new WaitUntil(predicate: () => task.IsCompleted);
+
+        DataSnapshot snapshot = task.Result;
+        string json = snapshot.GetRawJsonValue();
+        _worldSettingsDataCallback.Invoke(JsonConvert.DeserializeObject<WorldSettings>(json));
+    }
+
+    public bool RegisterCharacterMovementSpeedChangeValueEvent (EventHandler<ValueChangedEventArgs> callback)
+    {
+        var dataRef = FirebaseDatabase.DefaultInstance
+            .GetReference("worldSettings/characterSpeed");
+
+        if (dataRef == null)
+        {
+            return false;
+        }
+
+        dataRef.ValueChanged += callback;
+        return true;
+    }
+
+    public bool UnregisterCharacterMovementSpeedChangeValueEvent (EventHandler<ValueChangedEventArgs> callback)
+    {
+        var dataRef = FirebaseDatabase.DefaultInstance
+            .GetReference("worldSettings/characterSpeed");
 
         if (dataRef == null)
         {

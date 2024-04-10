@@ -6,13 +6,15 @@ using TMPro;
 
 public class MateHandler : ClientHandler
 {
-    public static int usernamFontMaxSize = 24;
+    public static int usernameFontMaxSize = 24;
     public static float usernameDistanceForFontMaxSize = 10f;
 
     protected Animator animator;
 
     public Transform standLabelTransform;
     public Transform sitLabelTransform;
+
+    public GameObject charRenderer;
 
     public TextMeshPro usernameLabel;
 
@@ -75,7 +77,7 @@ public class MateHandler : ClientHandler
     public override void SetUsernameLabel ()
     {
         usernameLabel.fontSizeMin = 1f;
-        usernameLabel.fontSizeMax = usernamFontMaxSize;
+        usernameLabel.fontSizeMax = usernameFontMaxSize;
         usernameLabel.text = registerData.username;
     }
 
@@ -108,7 +110,7 @@ public class MateHandler : ClientHandler
         
         // change the username font size according to the player distance
         var distanceNormalized = Mathf.InverseLerp(0f, usernameDistanceForFontMaxSize, Vector3.Distance(transform.position, playerPosition));
-        usernameLabel.fontSize = Mathf.Lerp(10f, usernamFontMaxSize, distanceNormalized);
+        usernameLabel.fontSize = Mathf.Lerp(10f, usernameFontMaxSize, distanceNormalized);
     }
 
     public void OnMateMessageValueChanged(object sender, ValueChangedEventArgs args)
@@ -116,5 +118,10 @@ public class MateHandler : ClientHandler
         var message = args.Snapshot.Value.ToString();
         OnMateMessageChanged?.Invoke(UserId, message);
         Debug.Log(RegisterData.username.ToString() + ": " + message);
+    }
+
+    public override void ShowModel (bool _toShow)
+    {
+        charRenderer.SetActive(_toShow);
     }
 }

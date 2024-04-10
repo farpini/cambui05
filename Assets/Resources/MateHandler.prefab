@@ -47,6 +47,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   standLabelTransform: {fileID: 6678798711403922341}
   sitLabelTransform: {fileID: 756471013757192099}
+  meshRenderer: {fileID: 7138269133634210687}
   usernameLabel: {fileID: 4533977343273534708}
 --- !u!1 &3345857562220051492
 GameObject:

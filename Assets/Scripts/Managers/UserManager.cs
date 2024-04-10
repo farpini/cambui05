@@ -16,7 +16,6 @@ using UnityEngine.UI;
 using UnityEngine.Analytics;
 using UnityEngine.XR.Interaction.Toolkit;
 using TMPro;
-using static System.Net.Mime.MediaTypeNames;
 
 public class UserManager : MonoBehaviour
 {
@@ -26,7 +25,7 @@ public class UserManager : MonoBehaviour
     protected static int CurrentWorldStateArg;
     protected static Dictionary<string, StateData[]> WorldStateDict;
 
-    protected static int quizCount = 3;
+    protected static WorldSettings WorldSettings = null;
 
     public PlayerHandler playerHandlerPrefab;
     public MateHandler mateHandlerPrefab;
@@ -92,20 +91,25 @@ public class UserManager : MonoBehaviour
         stundentQuizData = new();
 
         WorldStateDict = new();
+
+        FirebaseManager.instance.OnFirebaseInitialized += OnFirebaseInitialized;
+        FirebaseManager.instance.OnLoginSuccess += OnLogin;
     }
 
-    private void Start()
+    private void Start ()
     {
         SetXRButton();
         LoadWaypointHandlers();
         InitializeObjectHandlers();
-        CreatePlayerHandler();
-
-        FirebaseManager.instance.OnLoginSuccess += OnLogin;
     }
 
     private void Update()
     {
+        if (WorldSettings == null)
+        {
+            return;
+        }
+
         if (Input.GetKeyDown(KeyCode.F1))
         {
             XRSimulatorGO.SetActive(!XRSimulatorGO.activeSelf);
@@ -117,6 +121,7 @@ public class UserManager : MonoBehaviour
         }
 
         UpdateMatesLabel();
+
         /*
         if (Input.GetKeyDown(KeyCode.UpArrow))
         {
@@ -137,6 +142,18 @@ public class UserManager : MonoBehaviour
         {
             //FirebaseManager.instance.UnregisterUsersLoggedFlagChangeValueEvent(OnLoggedFlagChanged);
         }
+    }
+
+    private void OnFirebaseInitialized ()
+    {
+        StartCoroutine(FirebaseManager.instance.GetWorldSettingsData(OnWorldSettingsRead));
+        FirebaseManager.instance.OnFirebaseInitialized -= OnFirebaseInitialized;
+    }
+
+    private void OnWorldSettingsRead (WorldSettings worldSettings)
+    {
+        WorldSettings = worldSettings;
+        CreatePlayerHandler();
     }
 
     private void SetXRButton()
@@ -226,11 +243,16 @@ public class UserManager : MonoBehaviour
         playerHandler = Instantiate(playerHandlerPrefab);
         playerHandler.SetXRGO(XRGO, XRCameraOffsetGO);
         playerHandler.SetPosition(waypoints[0].transform.position);
-        //playerHandler.SetPosition(transformToTest.transform.position);
+        playerHandler.SetMovementSpeed(WorldSettings.characterSpeed);
+        playerHandler.OnClientWaypointReached += OnPlayerWaypointReached;
+
+        FirebaseManager.instance.RegisterCharacterMovementSpeedChangeValueEvent(OnCharacterMovementSpeedChanged);
     }
 
     private void OnLogin(string _userId)
     {
+        FirebaseManager.instance.OnLoginSuccess -= OnLogin;
+
         Debug.Log("Login success: " + _userId);
 
         /*
@@ -246,7 +268,6 @@ public class UserManager : MonoBehaviour
             new StateData { stateMsg = "bbb123123b", stateMsgDuration = 251f, stateMsgToShow = false }
         });
         */
-
 
         playerHandler.SetUserId(_userId);
 
@@ -434,7 +455,7 @@ public class UserManager : MonoBehaviour
         }
         else
         {
-            stundentQuizData.Add(playerHandler.UserId, new StudentQuizData { epiIds = new string[quizCount] });
+            stundentQuizData.Add(playerHandler.UserId, new StudentQuizData { epiIds = new string[WorldSettings.quizAnswerKeys.Length] });
             FirebaseManager.instance.RegisterQuizResultTextChangeValueEvent(OnQuizResultTextChanged);
         }
 
@@ -607,8 +628,14 @@ public class UserManager : MonoBehaviour
             var count = 0;
             for (int i = 0; i < studentData.Value.epiIds.Length; i++)
             {
-                if(i == int.Parse(studentData.Value.epiIds[i]) - 1) count ++;
-                Debug.Log("Pergunta " + i + ": valor " + studentData.Value.epiIds[i]);
+                var studentOption = int.Parse(studentData.Value.epiIds[i]);
+
+                if (studentOption == WorldSettings.quizAnswerKeys[i])
+                {
+                    count++;
+                }
+
+                Debug.Log("Pergunta " + i + ": valor " + studentOption);
             }
             result += GetMateHandler(studentData.Key).RegisterData.username + ":" + count + " acertos\n";
         }
@@ -616,11 +643,6 @@ public class UserManager : MonoBehaviour
         OnScoreChanged?.Invoke(result);
 
         FirebaseManager.instance.SetQuizText(result);
-    }
-
-    private void ReadStudentEpiId (string epiId, string userId)
-    {
-        stundentQuizData[userId].epiIds[quizIndex] = epiId;
     }
 
     private void ClearAllStudentEpiId ()
@@ -654,6 +676,18 @@ public class UserManager : MonoBehaviour
         if (!isPlayerLogged)
         {
             return;
+        }
+
+        // check if mates are already sit in a desk waypoint
+        if (waypointHandler.WaypointType == WaypointType.Desk)
+        {
+            for (int i = 0; i < mateHandlers.Count; i++)
+            {
+                if (mateHandlers[i].CurrentWaypoint == waypointHandler)
+                {
+                    return;
+                }
+            }
         }
 
         FirebaseManager.instance.SetUserRuntimeAttribute(playerHandler.UserId, UserRuntimeAttribute.waypoint, waypointHandler.WaypointIndex);
@@ -696,7 +730,7 @@ public class UserManager : MonoBehaviour
 
             if (mateHandler.RegisterData.tipo == "aluno")
             {
-                stundentQuizData.Add(mateHandler.UserId, new StudentQuizData { epiIds = new string[quizCount] });
+                stundentQuizData.Add(mateHandler.UserId, new StudentQuizData { epiIds = new string[WorldSettings.quizAnswerKeys.Length] });
             }
         }
     }
@@ -747,10 +781,14 @@ public class UserManager : MonoBehaviour
                 }
 
                 mateHandler.SetNewWaypoint(waypoint);
+
+                if (waypoint != playerHandler.CurrentWaypoint)
+                {
+                    mateHandler.ShowModel(true);
+                }
             }
         }
     }
-
 
     private void UpdateMatesLabel()
     {
@@ -841,5 +879,22 @@ public class UserManager : MonoBehaviour
     {
         var message = args.Snapshot.Value.ToString();
         OnScoreChanged?.Invoke(message);
+    }
+
+    private void OnCharacterMovementSpeedChanged (object sender, ValueChangedEventArgs args)
+    {
+        float speed = float.Parse(args.Snapshot.Value.ToString());
+        if (playerHandler != null)
+        {
+            playerHandler.SetMovementSpeed(speed);
+        }
+    }
+
+    private void OnPlayerWaypointReached (WaypointHandler waypoint)
+    {
+        for (int i = 0; i < mateHandlers.Count; i++)
+        {
+            mateHandlers[i].ShowModel(mateHandlers[i].CurrentWaypoint != playerHandler.CurrentWaypoint);
+        }
     }
 }

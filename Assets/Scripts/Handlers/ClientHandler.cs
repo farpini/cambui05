@@ -26,6 +26,7 @@ public abstract class ClientHandler : MonoBehaviour
 
     public Action<int> OnRoomChange;
     public Action<WaypointHandler> OnWaypointClicked;
+    public Action<WaypointHandler> OnClientWaypointReached;
 
 
     public void SetUserId (string _userId)
@@ -52,6 +53,11 @@ public abstract class ClientHandler : MonoBehaviour
     public void SetPosition (Vector3 _position)
     {
         transform.position = _position;
+    }
+
+    public void SetMovementSpeed (float _movementSpeed)
+    {
+        movementSpeed = _movementSpeed;
     }
 
     public void SetObjectHandler (ObjectHandler objectHandler)
@@ -154,6 +160,8 @@ public abstract class ClientHandler : MonoBehaviour
             OnRoomChange?.Invoke(currentWaypoint.GetComponent<DoorHandler>().roomIndex);
             //UserManager.instance.LoadWaypointHandlers();
         }
+
+        OnClientWaypointReached?.Invoke(currentWaypoint);
     }
 
     /*
@@ -174,6 +182,10 @@ public abstract class ClientHandler : MonoBehaviour
     }
 
     protected virtual void UpdateMovementLookRotation (Vector3 direction)
+    {
+    }
+
+    public virtual void ShowModel (bool _toShow)
     {
     }
 }

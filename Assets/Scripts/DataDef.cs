@@ -161,3 +161,10 @@ public class StudentQuizData
 {
     public string[] epiIds;
 }
+
+[Serializable]
+public class WorldSettings
+{
+    public float characterSpeed;
+    public int[] quizAnswerKeys;
+}
