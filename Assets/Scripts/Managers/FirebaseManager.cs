@@ -666,4 +666,44 @@ public class FirebaseManager : MonoBehaviour
         FirebaseDatabase.DefaultInstance.GetReference("usersConnected").RemoveValueAsync();
     }
 
+    public void SetQuizText (string quizText)
+    {
+        FirebaseDatabase.DefaultInstance
+            .GetReference("quizResultText")
+            .SetValueAsync(quizText).ContinueWithOnMainThread(task =>
+            {
+                if (task.IsFaulted)
+                {
+                    Debug.LogError(task + ": failed to set quiz result text");
+                }
+            });
+    }
+
+    public bool RegisterQuizResultTextChangeValueEvent (EventHandler<ValueChangedEventArgs> callback)
+    {
+        var dataRef = FirebaseDatabase.DefaultInstance
+            .GetReference("quizResultText");
+
+        if (dataRef == null)
+        {
+            return false;
+        }
+
+        dataRef.ValueChanged += callback;
+        return true;
+    }
+
+    public bool UnregisterQuizResultTextChangeValueEvent (EventHandler<ValueChangedEventArgs> callback)
+    {
+        var dataRef = FirebaseDatabase.DefaultInstance
+            .GetReference("quizResultText");
+
+        if (dataRef == null)
+        {
+            return false;
+        }
+
+        dataRef.ValueChanged -= callback;
+        return true;
+    }
 }

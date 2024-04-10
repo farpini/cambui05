@@ -16,6 +16,7 @@ using UnityEngine.UI;
 using UnityEngine.Analytics;
 using UnityEngine.XR.Interaction.Toolkit;
 using TMPro;
+using static System.Net.Mime.MediaTypeNames;
 
 public class UserManager : MonoBehaviour
 {
@@ -434,6 +435,7 @@ public class UserManager : MonoBehaviour
         else
         {
             stundentQuizData.Add(playerHandler.UserId, new StudentQuizData { epiIds = new string[quizCount] });
+            FirebaseManager.instance.RegisterQuizResultTextChangeValueEvent(OnQuizResultTextChanged);
         }
 
         playerHandler.SetUserRegisterData(userRegisterData);
@@ -597,7 +599,7 @@ public class UserManager : MonoBehaviour
 
     private void PrintQuizResult ()
     {
-        string result = "";
+        string result = "Pontuação:\n";
 
         foreach (var studentData in stundentQuizData)
         {
@@ -612,6 +614,8 @@ public class UserManager : MonoBehaviour
         }
 
         OnScoreChanged?.Invoke(result);
+
+        FirebaseManager.instance.SetQuizText(result);
     }
 
     private void ReadStudentEpiId (string epiId, string userId)
@@ -831,5 +835,11 @@ public class UserManager : MonoBehaviour
         }
 
         return new DropData { transformToDrop = null, dropOnOrigin = true };
+    }
+
+    private void OnQuizResultTextChanged (object sender, ValueChangedEventArgs args)
+    {
+        var message = args.Snapshot.Value.ToString();
+        OnScoreChanged?.Invoke(message);
     }
 }

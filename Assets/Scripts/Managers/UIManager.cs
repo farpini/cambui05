@@ -383,8 +383,7 @@ public class UIManager : MonoBehaviour
     private void ShowScoreText(string text)
     {
         scoreText.gameObject.SetActive(true);
-
-        scoreText.text = "Pontuação:\n" + text;
+        scoreText.text = text;
     }
 
 
