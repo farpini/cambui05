@@ -45,11 +45,14 @@ public class UIManager : MonoBehaviour
     public Toggle toggleProfessor;
     public Button adminRegisterButton;
     public Button adminBackButton;
+    public Button adminClearButton;
 
     [Header("BottomPanel")]
     public GameObject panelObject;
     public TMP_Text msgText;
 
+    [Header("PraticeRoom")]
+    public TMP_Text scoreText;
 
     private void Awake()
     {
@@ -73,7 +76,7 @@ public class UIManager : MonoBehaviour
         toggleStudent.isOn = false;
     }
 
-    private void Start ()
+    private void Start()
     {
         loginEmailField.onSelect.AddListener((string s) => OnLoginEmailFieldSelected());
         loginPasswordField.onSelect.AddListener((string s) => OnLoginPasswordFieldSelected());
@@ -94,6 +97,7 @@ public class UIManager : MonoBehaviour
 
         adminRegisterButton.onClick.AddListener(() => OnAdminRegisterButtonClicked());
         adminBackButton.onClick.AddListener(() => OnBackButtonClicked());
+        adminClearButton.onClick.AddListener(() => OnClearButtonClicked());
 
         toggleMale.onValueChanged.AddListener((bool v) => OnGenderToggleChanged(v));
         toggleFemale.onValueChanged.AddListener((bool v) => OnGenderToggleChanged(v));
@@ -111,9 +115,10 @@ public class UIManager : MonoBehaviour
         FirebaseManager.instance.OnAdminRegisterPrintResult += PrintAdminRegisterResult;
 
         UserManager.instance.OnWorldStateDataChanged += ShowWorldStateMessage;
+        UserManager.instance.OnScoreChanged += ShowScoreText;
     }
 
-    private void OnDestroy ()
+    private void OnDestroy()
     {
         loginEmailField.onSelect.RemoveAllListeners();
         loginPasswordField.onSelect.RemoveAllListeners();
@@ -134,6 +139,7 @@ public class UIManager : MonoBehaviour
 
         adminRegisterButton.onClick.RemoveAllListeners();
         adminBackButton.onClick.RemoveAllListeners();
+        adminClearButton.onClick.RemoveAllListeners();
 
         toggleMale.onValueChanged.RemoveAllListeners();
         toggleFemale.onValueChanged.RemoveAllListeners();
@@ -141,7 +147,7 @@ public class UIManager : MonoBehaviour
         toggleStudent.onValueChanged.RemoveAllListeners();
     }
 
-    private void OnGenderToggleChanged (bool value)
+    private void OnGenderToggleChanged(bool value)
     {
         if (toggleMale.isOn)
         {
@@ -153,7 +159,7 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    private void OnTypeToggleChanged (bool value)
+    private void OnTypeToggleChanged(bool value)
     {
         if (toggleProfessor.isOn)
         {
@@ -165,46 +171,51 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    private void OnLoginButtonClicked ()
+    private void OnLoginButtonClicked()
     {
         FirebaseManager.instance.OnLoginButtonClicked(loginEmailField.text, loginPasswordField.text);
     }
 
-    private void OnLoginRegisterButtonClicked ()
+    private void OnLoginRegisterButtonClicked()
     {
         OpenAdminUI();
     }
 
-    private void OnRegisterButtonClicked ()
+    private void OnRegisterButtonClicked()
     {
-        FirebaseManager.instance.OnRegisterButtonClicked(registerUsernameField.text, registerPasswordField.text, 
+        FirebaseManager.instance.OnRegisterButtonClicked(registerUsernameField.text, registerPasswordField.text,
             registerPasswordConfirmField.text, toggleMale.isOn ? ClientGender.masculino : ClientGender.feminino);
     }
 
-    private void OnAdminRegisterButtonClicked ()
+    private void OnAdminRegisterButtonClicked()
     {
         FirebaseManager.instance.OnAdminRegisterButtonClicked(adminEmailField.text, adminPasswordField.text, adminMatriculaField.text,
             toggleProfessor.isOn ? ClientType.professor : ClientType.aluno);
     }
 
-    private void OnBackButtonClicked ()
+    private void OnBackButtonClicked()
     {
         OpenLoginUI();
     }
 
-    private void PrintLoginResult (string loginResult, Color color)
+    private void OnClearButtonClicked()
+    {
+        FirebaseManager.instance.ClearUserConnectedData();
+    }
+
+    private void PrintLoginResult(string loginResult, Color color)
     {
         loginResultText.text = loginResult;
         loginResultText.color = color;
     }
 
-    private void PrintUserRegisterResult (string registerResult, Color color)
+    private void PrintUserRegisterResult(string registerResult, Color color)
     {
         registerUserResultText.text = registerResult;
         registerUserResultText.color = color;
     }
 
-    private void PrintAdminRegisterResult (string registerResult, Color color)
+    private void PrintAdminRegisterResult(string registerResult, Color color)
     {
         registerAdminResultText.text = registerResult;
         registerAdminResultText.color = color;
@@ -213,7 +224,7 @@ public class UIManager : MonoBehaviour
         adminPasswordField.text = "";
     }
 
-    private void OpenLoginUI (string userId = "")
+    private void OpenLoginUI(string userId = "")
     {
         backgroundUI.SetActive(true);
         loginUI.SetActive(true);
@@ -221,7 +232,7 @@ public class UIManager : MonoBehaviour
         registerUI.SetActive(false);
     }
 
-    private void OpenRegisterUI (string userId = "")
+    private void OpenRegisterUI(string userId = "")
     {
         backgroundUI.SetActive(true);
         loginUI.SetActive(false);
@@ -229,7 +240,7 @@ public class UIManager : MonoBehaviour
         adminUI.SetActive(false);
     }
 
-    private void OpenAdminUI (string userId = "")
+    private void OpenAdminUI(string userId = "")
     {
         backgroundUI.SetActive(true);
         loginUI.SetActive(false);
@@ -237,7 +248,7 @@ public class UIManager : MonoBehaviour
         adminUI.SetActive(true);
     }
 
-    private void HideAllUI (string userId = "")
+    private void HideAllUI(string userId = "")
     {
         backgroundUI.SetActive(false);
         loginUI.SetActive(false);
@@ -245,7 +256,7 @@ public class UIManager : MonoBehaviour
         adminUI.SetActive(false);
     }
 
-    private void OnLoginEmailFieldSelected ()
+    private void OnLoginEmailFieldSelected()
     {
         NonNativeKeyboard.Instance.InputField = loginEmailField;
         NonNativeKeyboard.Instance.PresentKeyboard();
@@ -258,7 +269,7 @@ public class UIManager : MonoBehaviour
         NonNativeKeyboard.Instance.RepositionKeyboard(targetPosition);
     }
 
-    private void OnLoginPasswordFieldSelected ()
+    private void OnLoginPasswordFieldSelected()
     {
         NonNativeKeyboard.Instance.InputField = loginPasswordField;
         NonNativeKeyboard.Instance.PresentKeyboard();
@@ -269,10 +280,10 @@ public class UIManager : MonoBehaviour
         Vector3 targetPosition = loginPasswordField.transform.position + direction * 0.5f + Vector3.up * verticaloffset;
         NonNativeKeyboard.Instance.SetScaleSizeValues(1.8f, 1.8f, 0f, 10f);
         NonNativeKeyboard.Instance.RepositionKeyboard(targetPosition);
-        
+
     }
 
-    private void OnRegisterUsernameFieldSelected ()
+    private void OnRegisterUsernameFieldSelected()
     {
         NonNativeKeyboard.Instance.InputField = registerUsernameField;
         NonNativeKeyboard.Instance.PresentKeyboard();
@@ -285,7 +296,7 @@ public class UIManager : MonoBehaviour
         NonNativeKeyboard.Instance.RepositionKeyboard(targetPosition);
     }
 
-    private void OnRegisterPasswordFieldSelected ()
+    private void OnRegisterPasswordFieldSelected()
     {
         NonNativeKeyboard.Instance.InputField = registerPasswordField;
         NonNativeKeyboard.Instance.PresentKeyboard();
@@ -298,7 +309,7 @@ public class UIManager : MonoBehaviour
         NonNativeKeyboard.Instance.RepositionKeyboard(targetPosition);
     }
 
-    private void OnRegisterPasswordConfirmFieldSelected ()
+    private void OnRegisterPasswordConfirmFieldSelected()
     {
         NonNativeKeyboard.Instance.InputField = registerPasswordConfirmField;
         NonNativeKeyboard.Instance.PresentKeyboard();
@@ -311,7 +322,7 @@ public class UIManager : MonoBehaviour
         NonNativeKeyboard.Instance.RepositionKeyboard(targetPosition);
     }
 
-    private void OnAdminMatriculaFieldSelected ()
+    private void OnAdminMatriculaFieldSelected()
     {
         NonNativeKeyboard.Instance.InputField = adminMatriculaField;
         NonNativeKeyboard.Instance.PresentKeyboard();
@@ -324,7 +335,7 @@ public class UIManager : MonoBehaviour
         NonNativeKeyboard.Instance.RepositionKeyboard(targetPosition);
     }
 
-    private void OnAdminEmailFieldSelected ()
+    private void OnAdminEmailFieldSelected()
     {
         NonNativeKeyboard.Instance.InputField = adminEmailField;
         NonNativeKeyboard.Instance.PresentKeyboard();
@@ -337,7 +348,7 @@ public class UIManager : MonoBehaviour
         NonNativeKeyboard.Instance.RepositionKeyboard(targetPosition);
     }
 
-    private void OnAdminPasswordFieldSelected ()
+    private void OnAdminPasswordFieldSelected()
     {
         NonNativeKeyboard.Instance.InputField = adminPasswordField;
         NonNativeKeyboard.Instance.PresentKeyboard();
@@ -350,7 +361,7 @@ public class UIManager : MonoBehaviour
         NonNativeKeyboard.Instance.RepositionKeyboard(targetPosition);
     }
 
-    private void ShowWorldStateMessage (WorldState worldState, StateData stateData)
+    private void ShowWorldStateMessage(WorldState worldState, StateData stateData)
     {
         if (stateData.stateMsgToShow)
         {
@@ -369,7 +380,15 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    private IEnumerator CountDownToHideMessage (float messageDuration)
+    private void ShowScoreText(string text)
+    {
+        scoreText.gameObject.SetActive(true);
+
+        scoreText.text = "Pontuação:\n" + text;
+    }
+
+
+    private IEnumerator CountDownToHideMessage(float messageDuration)
     {
         yield return new WaitForSeconds(messageDuration);
         panelObject.SetActive(false);

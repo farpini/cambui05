@@ -15,6 +15,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Analytics;
 using UnityEngine.XR.Interaction.Toolkit;
+using TMPro;
 
 public class UserManager : MonoBehaviour
 {
@@ -71,6 +72,7 @@ public class UserManager : MonoBehaviour
     private bool hasClientLogged = false;
 
     public Action<WorldState, StateData> OnWorldStateDataChanged;
+    public Action<string> OnScoreChanged;
 
 
     private void Awake()
@@ -595,14 +597,21 @@ public class UserManager : MonoBehaviour
 
     private void PrintQuizResult ()
     {
+        string result = "";
+
         foreach (var studentData in stundentQuizData)
         {
             Debug.Log("Estudante: " + studentData.Key + " resultado:");
+            var count = 0;
             for (int i = 0; i < studentData.Value.epiIds.Length; i++)
             {
+                if(i == int.Parse(studentData.Value.epiIds[i]) - 1) count ++;
                 Debug.Log("Pergunta " + i + ": valor " + studentData.Value.epiIds[i]);
             }
+            result += GetMateHandler(studentData.Key).RegisterData.username + ":" + count + " acertos\n";
         }
+
+        OnScoreChanged?.Invoke(result);
     }
 
     private void ReadStudentEpiId (string epiId, string userId)

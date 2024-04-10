@@ -659,4 +659,11 @@ public class FirebaseManager : MonoBehaviour
                 }
             });
     }
+
+    public void ClearUserConnectedData()
+    {
+        SetUsersConnectedCount(0);
+        FirebaseDatabase.DefaultInstance.GetReference("usersConnected").RemoveValueAsync();
+    }
+
 }
