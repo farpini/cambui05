@@ -26,7 +26,7 @@ public abstract class ClientHandler : MonoBehaviour
 
     public Action<int> OnRoomChange;
     public Action<WaypointHandler> OnWaypointClicked;
-    public Action<WaypointHandler> OnClientWaypointReached;
+    public Action<ClientHandler, WaypointHandler> OnClientWaypointReached;
 
 
     public void SetUserId (string _userId)
@@ -116,8 +116,6 @@ public abstract class ClientHandler : MonoBehaviour
                     lookTransform.rotation = Quaternion.LookRotation(currentWaypoint.WaypointEnterDirection);
                 }
             }
-
-            
         }
         else
         {
@@ -142,6 +140,11 @@ public abstract class ClientHandler : MonoBehaviour
             //animator.SetInteger("stateValue", 2);
             runtimeData.state = ClientState.Sit.ToString();
 
+            if (this is MateHandler)
+            {
+                transform.rotation = Quaternion.LookRotation(Vector3.forward);
+            }
+
             SetCamera(false);
         }
         else if (currentWaypoint.WaypointType == WaypointType.Floor)
@@ -149,6 +152,14 @@ public abstract class ClientHandler : MonoBehaviour
             //animator.SetInteger("stateValue", 0);
 
             runtimeData.state = ClientState.Idle.ToString();
+
+            if (this is MateHandler)
+            {
+                if (currentWaypoint.WaypointForceDirection)
+                {
+                    transform.rotation = Quaternion.LookRotation(currentWaypoint.WaypointEnterDirection);
+                }
+            }
 
             SetCamera(true);
         }
@@ -161,7 +172,7 @@ public abstract class ClientHandler : MonoBehaviour
             //UserManager.instance.LoadWaypointHandlers();
         }
 
-        OnClientWaypointReached?.Invoke(currentWaypoint);
+        OnClientWaypointReached?.Invoke(this, currentWaypoint);
     }
 
     /*

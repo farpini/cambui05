@@ -2350,7 +2350,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &99181958
 Transform:
   m_ObjectHideFlags: 0
@@ -8145,7 +8145,7 @@ PrefabInstance:
     - target: {fileID: 7023312892010802857, guid: 6e32371de4025f343a797c25c159a40e,
         type: 3}
       propertyPath: waypointForceDirection
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7023312892010802857, guid: 6e32371de4025f343a797c25c159a40e,
         type: 3}

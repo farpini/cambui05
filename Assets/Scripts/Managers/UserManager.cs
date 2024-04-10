@@ -471,6 +471,7 @@ public class UserManager : MonoBehaviour
 
     private void SetWorldState(WorldState worldState)
     {
+        CurrentWorldStateArg = 0;
         CurrentWorldState = worldState;
         if(worldState == WorldState.ClassStarted) boardImage.gameObject.SetActive(true);
         PrintWorldStateMessage();
@@ -491,13 +492,58 @@ public class UserManager : MonoBehaviour
             switch (type)
             {
                 case ButtonType.Next:
-                //ProfessorQuizQuestionClicked();
+                break;
+                case ButtonType.Start:
+                ProfessorStartClass();
+                break;
+                case ButtonType.Previous:
+                break;
+                default:
+                break;
+            }
+        }
+        else if (CurrentWorldState == WorldState.ClassStarted)
+        {
+            switch (type)
+            {
+                case ButtonType.Next:
+                ProfessorNextClassScreenClick();
+                break;
+                case ButtonType.Start:
+                ProfessorEndClass();
+                break;
+                case ButtonType.Previous:
+                ProfessorPreviousClassScreenClick();
+                break;
+                default:
+                break;
+            }
+        }
+        else if (CurrentWorldState == WorldState.WaitingOnPracticeRoom)
+        {
+            switch (type)
+            {
+                case ButtonType.Next:
+                break;
+                case ButtonType.Start:
+                ProfessorStartPractice();
+                break;
+                case ButtonType.Previous:
+                break;
+                default:
+                break;
+            }
+        }
+        else if (CurrentWorldState == WorldState.PracticeStarted)
+        {
+            switch (type)
+            {
+                case ButtonType.Next:
                 break;
                 case ButtonType.Start:
                 ProfessorStartQuiz();
                 break;
                 case ButtonType.Previous:
-                //ProfessorPreviousClick();
                 break;
                 default:
                 break;
@@ -511,43 +557,38 @@ public class UserManager : MonoBehaviour
                 ProfessorQuizQuestionClicked();
                 break;
                 case ButtonType.Start:
-                //ProfessorStartQuiz();
                 break;
                 case ButtonType.Previous:
-                //ProfessorPreviousClick();
+
                 break;
                 default:
                 break;
             }
         }
-
-
-
-        /*
-        switch (type)
-        {
-            case ButtonType.Next:
-                ProfessorNextClick();
-                break;
-            case ButtonType.Start:
-                ProfessorStartClass();
-                break;
-            case ButtonType.Previous:
-                ProfessorPreviousClick();
-                break;
-            default:
-                break;
-        }
-        */
     }
 
     private void ProfessorStartClass()
     {
         FirebaseManager.instance.SetWorldState(WorldState.ClassStarted);
         SetWorldState(WorldState.ClassStarted);
+        SetWorldStateArg(0);
     }
 
-    private void ProfessorNextClick()
+    private void ProfessorStartPractice ()
+    {
+        FirebaseManager.instance.SetWorldState(WorldState.PracticeStarted);
+        SetWorldState(WorldState.PracticeStarted);
+        SetWorldStateArg(0);
+    }
+
+    private void ProfessorEndClass ()
+    {
+        FirebaseManager.instance.SetWorldState(WorldState.WaitingOnPracticeRoom);
+        SetWorldState(WorldState.WaitingOnPracticeRoom);
+        SetWorldStateArg(0);
+    }
+
+    private void ProfessorNextClassScreenClick()
     {
         if (classImagesIndex >= 0 && classImagesIndex < classImages.Count - 1)
         {
@@ -557,7 +598,7 @@ public class UserManager : MonoBehaviour
         }
     }
 
-    private void ProfessorPreviousClick()
+    private void ProfessorPreviousClassScreenClick()
     {
         if (classImagesIndex > 0) 
         {
@@ -612,10 +653,17 @@ public class UserManager : MonoBehaviour
         if (CurrentWorldStateArg == 4)
         {
             PrintQuizResult();
+            ProfessorEndQuiz();
             return;
         }
 
         ClearAllStudentEpiId();
+    }
+
+    private void ProfessorEndQuiz ()
+    {
+        FirebaseManager.instance.SetWorldState(WorldState.QuizFinished);
+        SetWorldState(WorldState.QuizFinished);
     }
 
     private void PrintQuizResult ()
@@ -699,6 +747,7 @@ public class UserManager : MonoBehaviour
         var mateHandler = Instantiate(mateHandlerPrefab);
         mateHandler.SetUserId(_userId);
         mateHandler.SetUserRuntimeData(_userRuntimeData);
+        mateHandler.OnClientWaypointReached += OnMateWaypointReached;
         mateHandlers.Add(mateHandler);
 
         // it will continue the creation OnMateRegisterDataRead
@@ -890,11 +939,16 @@ public class UserManager : MonoBehaviour
         }
     }
 
-    private void OnPlayerWaypointReached (WaypointHandler waypoint)
+    private void OnPlayerWaypointReached (ClientHandler clientHandler, WaypointHandler waypoint)
     {
         for (int i = 0; i < mateHandlers.Count; i++)
         {
             mateHandlers[i].ShowModel(mateHandlers[i].CurrentWaypoint != playerHandler.CurrentWaypoint);
         }
+    }
+
+    private void OnMateWaypointReached (ClientHandler clientHandler, WaypointHandler waypoint)
+    {
+        clientHandler.ShowModel(waypoint != playerHandler.CurrentWaypoint);
     }
 }
