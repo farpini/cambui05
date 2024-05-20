@@ -1,3 +1,4 @@
+using Firebase.Database;
 using System;
 using TMPro;
 using UnityEngine;
@@ -27,6 +28,7 @@ public abstract class ClientHandler : MonoBehaviour
     public Action<int> OnRoomChange;
     public Action<WaypointHandler> OnWaypointClicked;
     public Action<ClientHandler, WaypointHandler> OnClientWaypointReached;
+    public Action<string, string> OnClientMessageChanged;
 
 
     public void SetUserId (string _userId)
@@ -194,6 +196,13 @@ public abstract class ClientHandler : MonoBehaviour
 
     protected virtual void UpdateMovementLookRotation (Vector3 direction)
     {
+    }
+
+    public virtual void OnClientMessageValueChanged (object sender, ValueChangedEventArgs args)
+    {
+        var message = args.Snapshot.Value.ToString();
+        OnClientMessageChanged?.Invoke(UserId, message);
+        //Debug.Log(RegisterData.username.ToString() + ": " + message);
     }
 
     public virtual void ShowModel (bool _toShow)

@@ -991,6 +991,7 @@ GameObject:
   - component: {fileID: 4570820106240217841}
   - component: {fileID: 9041417335368125255}
   - component: {fileID: 8435101303963092347}
+  - component: {fileID: 746253712330918583}
   m_Layer: 0
   m_Name: ChatMsgPanel
   m_TagString: Untagged
@@ -1081,6 +1082,20 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &746253712330918583
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6839426838204822}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3312d7739989d2b4e91e6319e9a96d76, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Padding: {x: 0, y: 0, z: 0, w: 0}
+  m_Softness: {x: 0, y: 0}
 --- !u!1 &58445280694286476
 GameObject:
   m_ObjectHideFlags: 0

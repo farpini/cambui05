@@ -434,6 +434,7 @@ public class UIManager : MonoBehaviour
         var newMessageComponent = Instantiate(msgTemplate);
         newMessageComponent.SetMessage(message);
         newMessageComponent.transform.SetParent(msgChatListPanel.transform, false);
+        newMessageComponent.transform.SetAsLastSibling();
     }
 
     private void OnPreMsgSelectionChanged ()

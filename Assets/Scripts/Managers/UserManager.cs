@@ -463,11 +463,12 @@ public class UserManager : MonoBehaviour
 
         playerHandler.SetUserRegisterData(userRegisterData);
         playerHandler.SetPosition(waypoints[0].transform.position);
-        //playerHandler.SetCamera(true, true);
-        //playerHandler.OnWaypointClicked = OnPlayerWaypointClicked;
-        //playerHandler.OnRoomChange = OnRoomChange;
-        //playerHandler.OnButtonClicked = OnButtonClicked;
+        playerHandler.OnClientMessageChanged = OnClientMessageChanged;
         playerHandler.InitializeClient();
+        FirebaseManager.instance.
+            RegisterUserRuntimeAttributeChangeValueEvent(userId, UserRuntimeAttribute.message,
+            playerHandler.OnClientMessageValueChanged);
+        
         UpdateButton();
     }
 
@@ -766,14 +767,10 @@ public class UserManager : MonoBehaviour
             mateHandler.ChangeModel();
             mateHandler.SetPosition(waypoints[waypointIdx].transform.position);
             mateHandler.OnMateWaypointChanged = OnClientWaypointChanged;
-            //mateHandler.OnMateMessageChanged = OnClientMessageChanged;
             mateHandler.InitializeClient();
             FirebaseManager.instance.
                 RegisterUserRuntimeAttributeChangeValueEvent(userId, UserRuntimeAttribute.waypoint,
                 mateHandler.OnMateWaypointValueChanged);
-            FirebaseManager.instance.
-                RegisterUserRuntimeAttributeChangeValueEvent(userId, UserRuntimeAttribute.message,
-                OnMateMessageValueChanged);
             FirebaseManager.instance.
                 RegisterWorldStateChangeValueEvent(OnWorldStateChanged);
             FirebaseManager.instance.
@@ -860,20 +857,12 @@ public class UserManager : MonoBehaviour
             return;
         }
 
-        if (userId == playerHandler.UserId)
+        if (userId != playerHandler.UserId)
         {
             return;
         }
 
-        var mateHandler = GetMateHandler(userId);
-
-        if (mateHandler == null)
-        {
-            Debug.LogError("not found mate");
-            return;
-        }
-
-        Debug.Log(mateHandler.RegisterData.username + ": " + message);
+        OnReceivedMessage?.Invoke(message);
     }
 
     private void SendClientMessage(string userId, string message)

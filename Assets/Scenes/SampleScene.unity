@@ -21086,6 +21086,21 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 5
       objectReference: {fileID: 0}
+    - target: {fileID: 583140698091702838, guid: 895f6f3c2d334633b5800312285058d2,
+        type: 3}
+      propertyPath: m_ChildAlignment
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 583140698091702838, guid: 895f6f3c2d334633b5800312285058d2,
+        type: 3}
+      propertyPath: m_ReverseArrangement
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 586134142016833292, guid: 895f6f3c2d334633b5800312285058d2,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 707101790923259735, guid: 895f6f3c2d334633b5800312285058d2,
         type: 3}
       propertyPath: m_SizeDelta.x
@@ -21735,6 +21750,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Layer
       value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 9007349878570573531, guid: 895f6f3c2d334633b5800312285058d2,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9014170783705847993, guid: 895f6f3c2d334633b5800312285058d2,
         type: 3}
@@ -49008,7 +49028,7 @@ MonoBehaviour:
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
   m_RenderPostProcessing: 1
-  m_Antialiasing: 1
+  m_Antialiasing: 2
   m_AntialiasingQuality: 2
   m_StopNaN: 0
   m_Dithering: 0
