@@ -73,6 +73,8 @@ public class UserManager : MonoBehaviour
 
     public Action<WorldState, StateData> OnWorldStateDataChanged;
     public Action<string> OnScoreChanged;
+    public Action<List<string>> OnDestinationMsgUsernamesChanged;
+    public Action<string> OnReceivedMessage;
 
 
     private void Awake()
@@ -764,18 +766,20 @@ public class UserManager : MonoBehaviour
             mateHandler.ChangeModel();
             mateHandler.SetPosition(waypoints[waypointIdx].transform.position);
             mateHandler.OnMateWaypointChanged = OnClientWaypointChanged;
-            mateHandler.OnMateMessageChanged = OnClientMessageChanged;
+            //mateHandler.OnMateMessageChanged = OnClientMessageChanged;
             mateHandler.InitializeClient();
             FirebaseManager.instance.
                 RegisterUserRuntimeAttributeChangeValueEvent(userId, UserRuntimeAttribute.waypoint,
                 mateHandler.OnMateWaypointValueChanged);
             FirebaseManager.instance.
                 RegisterUserRuntimeAttributeChangeValueEvent(userId, UserRuntimeAttribute.message,
-                mateHandler.OnMateMessageValueChanged);
+                OnMateMessageValueChanged);
             FirebaseManager.instance.
                 RegisterWorldStateChangeValueEvent(OnWorldStateChanged);
             FirebaseManager.instance.
                 RegisterWorldStateArgChangeValueEvent(OnWorldStateArgChanged);
+
+            UpdateUsernameDestinationMsg();
 
             if (mateHandler.RegisterData.tipo == "aluno")
             {
@@ -950,5 +954,60 @@ public class UserManager : MonoBehaviour
     private void OnMateWaypointReached (ClientHandler clientHandler, WaypointHandler waypoint)
     {
         clientHandler.ShowModel(waypoint != playerHandler.CurrentWaypoint);
+    }
+
+    public void OnSendMsgButtonClicked (string message, string destination, int destinationValue)
+    {
+        if (playerHandler == null || !playerHandler.IsClientInitialized)
+        {
+            return;
+        }
+
+        string msg = "";
+
+        if (destinationValue > 0)
+        {
+            msg += ("[P] " + playerHandler.RegisterData.username + ": " + message);
+
+            for (int i = 0; i < mateHandlers.Count; i++)
+            {
+                if (mateHandlers[i].RegisterData.username == destination)
+                {
+                    FirebaseManager.instance.SetUserRuntimeAttribute(mateHandlers[i].UserId, UserRuntimeAttribute.message, msg);
+                    break;
+                }
+            }
+        }
+        else
+        {
+            msg += (playerHandler.RegisterData.username + ": " + message);
+
+            for (int i = 0; i < mateHandlers.Count; i++)
+            {
+                FirebaseManager.instance.SetUserRuntimeAttribute(mateHandlers[i].UserId, UserRuntimeAttribute.message, msg);
+            }
+
+            //FirebaseManager.instance.SetUserRuntimeAttribute(playerHandler.UserId, UserRuntimeAttribute.message, msg);
+        }
+
+        OnReceivedMessage?.Invoke(msg);
+    }
+
+    private void UpdateUsernameDestinationMsg ()
+    {
+        List<string> destinationOptions = new List<string>();
+        destinationOptions.Add("Geral");
+        for (int i = 0; i < mateHandlers.Count; i++)
+        {
+            destinationOptions.Add(mateHandlers[i].RegisterData.username);
+        }
+
+        OnDestinationMsgUsernamesChanged?.Invoke(destinationOptions);
+    }
+
+    public void OnMateMessageValueChanged (object sender, ValueChangedEventArgs args)
+    {
+        var message = args.Snapshot.Value.ToString();
+        OnReceivedMessage?.Invoke(message);
     }
 }

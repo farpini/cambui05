@@ -19,7 +19,7 @@ public class MateHandler : ClientHandler
     public TextMeshPro usernameLabel;
 
     public Action<string, int> OnMateWaypointChanged;
-    public Action<string, string> OnMateMessageChanged;
+    //public Action<string, string> OnMateMessageChanged;
 
 
     public void Awake ()
@@ -113,12 +113,14 @@ public class MateHandler : ClientHandler
         usernameLabel.fontSize = Mathf.Lerp(10f, usernameFontMaxSize, distanceNormalized);
     }
 
+    /*
     public void OnMateMessageValueChanged(object sender, ValueChangedEventArgs args)
     {
         var message = args.Snapshot.Value.ToString();
         OnMateMessageChanged?.Invoke(UserId, message);
         Debug.Log(RegisterData.username.ToString() + ": " + message);
     }
+    */
 
     public override void ShowModel (bool _toShow)
     {
