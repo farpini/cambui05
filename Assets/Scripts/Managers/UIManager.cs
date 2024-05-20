@@ -47,6 +47,7 @@ public class UIManager : MonoBehaviour
     public Button adminClearButton;
 
     [Header("TopPanel")]
+    public GameObject topPanelObject;
     public GameObject panelObject;
     public TMP_Text msgInstructionsText;
     public Button msgButton;
@@ -77,6 +78,7 @@ public class UIManager : MonoBehaviour
 
         OpenLoginUI();
 
+        topPanelObject.SetActive(false);
         panelObject.SetActive(false);
         toggleMale.isOn = true;
         toggleFemale.isOn = false;
@@ -280,6 +282,7 @@ public class UIManager : MonoBehaviour
         loginUI.SetActive(false);
         registerUI.SetActive(false);
         adminUI.SetActive(false);
+        topPanelObject.SetActive(true);
     }
 
     private void OnLoginEmailFieldSelected ()
