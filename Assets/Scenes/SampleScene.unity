@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 2138677392}
-  m_IndirectSpecularColor: {r: 0.2850269, g: 0.3713935, b: 0.49601045, a: 1}
+  m_IndirectSpecularColor: {r: 0.28502667, g: 0.37139323, b: 0.49600998, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -21574,7 +21574,7 @@ PrefabInstance:
     - target: {fileID: 6869279771583456193, guid: 895f6f3c2d334633b5800312285058d2,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 200
+      value: 199.99998
       objectReference: {fileID: 0}
     - target: {fileID: 7010340366221252854, guid: 895f6f3c2d334633b5800312285058d2,
         type: 3}
@@ -47094,7 +47094,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!114 &1902770679
 MonoBehaviour:
@@ -47156,11 +47156,16 @@ MonoBehaviour:
   - {fileID: 1779800356}
   boardImage: {fileID: 1349606318}
   classImages:
-  - {fileID: 2800000, guid: 30e809c0b5c4d7c4cb1261383a9b4ee7, type: 3}
-  - {fileID: 2800000, guid: 4d90ec3eaff270942b83e2dab6e4d01a, type: 3}
-  - {fileID: 2800000, guid: e325636fd88e4c94cb95d57d8eee2b04, type: 3}
-  - {fileID: 2800000, guid: cf8d4bc2bea867b4c92ecd6cdc7ef25c, type: 3}
-  - {fileID: 2800000, guid: bfc218b0eede8ea44bffe48980ee8ebc, type: 3}
+  - {fileID: 2800000, guid: 532483b8ecf660444952f44372d9cba3, type: 3}
+  - {fileID: 2800000, guid: 510a5cb91e824ce44a627a1e487b7c0f, type: 3}
+  - {fileID: 2800000, guid: f6081f2e373c86647b2bb96428c8048e, type: 3}
+  - {fileID: 2800000, guid: f06e4d0262385044aa6d57c5dbf7f6a1, type: 3}
+  - {fileID: 2800000, guid: 1ed6cf5bbeeed1e47a0c4bc516f66778, type: 3}
+  - {fileID: 2800000, guid: 236c539c24156d94a948f650d8c26f1e, type: 3}
+  - {fileID: 2800000, guid: 2875b5291ca480349ad0662fa4c333a7, type: 3}
+  - {fileID: 2800000, guid: ade179ae380af9741a5a5f0351e68b91, type: 3}
+  - {fileID: 2800000, guid: 30b3825f14ba00a4996a50d3b208760d, type: 3}
+  - {fileID: 2800000, guid: 72e7ad0fe27826c4a8c4905386ec06ff, type: 3}
   waypointsRoomOrigins: 000000000000000000000000
   playerHandler: {fileID: 0}
   waypoints: []
