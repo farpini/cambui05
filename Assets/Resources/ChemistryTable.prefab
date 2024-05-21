@@ -760,6 +760,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: earmuffs
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 445e750de5fb9144c89a834757d2a818,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1045,6 +1050,21 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -3910990755373119420, guid: 86f09c07a8ec3ab49a055f19a8d58cb3,
         type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.05
+      objectReference: {fileID: 0}
+    - target: {fileID: -3910990755373119420, guid: 86f09c07a8ec3ab49a055f19a8d58cb3,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.05
+      objectReference: {fileID: 0}
+    - target: {fileID: -3910990755373119420, guid: 86f09c07a8ec3ab49a055f19a8d58cb3,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.05
+      objectReference: {fileID: 0}
+    - target: {fileID: -3910990755373119420, guid: 86f09c07a8ec3ab49a055f19a8d58cb3,
+        type: 3}
       propertyPath: m_LocalPosition.x
       value: 2.806
       objectReference: {fileID: 0}
@@ -1096,7 +1116,7 @@ PrefabInstance:
     - target: {fileID: 8771091787928289351, guid: 86f09c07a8ec3ab49a055f19a8d58cb3,
         type: 3}
       propertyPath: m_Name
-      value: QuemistTable
+      value: ChemistryTable
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1203,6 +1223,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Helmet
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 9f4818a147f958b468eea4a4826926b1,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1556,6 +1581,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: SafetyGlasses
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 30a5a4ad15bb5344b93f10d8ecd21aea,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
