@@ -10,7 +10,7 @@ using System.Linq;
 //using System.Runtime.Remoting.Messaging;
 //using System.Runtime.Remoting.Metadata;
 using Unity.Mathematics;
-using UnityEditor.VersionControl;
+//using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Analytics;
