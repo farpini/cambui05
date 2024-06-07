@@ -813,9 +813,13 @@ public class UserManager : MonoBehaviour
             {
                 waypoint = waypoints[waypointsRoomOrigins[waypoints[waypointValue].GetComponent<DoorHandler>().roomIndex]];
                 playerHandler.SetPosition(waypoint.transform.position);
+                playerHandler.SetNewWaypoint(waypoint);
+                playerHandler.SetRotation();
             }
-
-            playerHandler.SetNewWaypoint(waypoint);
+            else 
+            {
+                playerHandler.SetNewWaypoint(waypoint);
+            }
         }
         else
         {

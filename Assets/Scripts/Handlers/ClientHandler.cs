@@ -1,7 +1,12 @@
 using Firebase.Database;
 using System;
 using TMPro;
+using Unity.XR.CoreUtils;
 using UnityEngine;
+using UnityEngine.InputSystem.XR;
+using UnityEngine.UIElements;
+using UnityEngine.XR;
+using UnityEngine.XR.Interaction.Toolkit;
 
 public abstract class ClientHandler : MonoBehaviour
 {
@@ -55,6 +60,11 @@ public abstract class ClientHandler : MonoBehaviour
     public void SetPosition (Vector3 _position)
     {
         transform.position = _position;
+    }
+
+    public void SetRotation () 
+    {
+        lookTransform.rotation = Quaternion.Euler(currentWaypoint.WaypointEnterDirection);
     }
 
     public void SetMovementSpeed (float _movementSpeed)
