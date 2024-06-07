@@ -65,6 +65,7 @@ public abstract class ClientHandler : MonoBehaviour
     public void SetRotation () 
     {
         lookTransform.rotation = Quaternion.Euler(currentWaypoint.WaypointEnterDirection);
+        lookTransform.GetComponentInParent<XROrigin>().MatchOriginUpCameraForward(lookTransform.up, lookTransform.forward);
     }
 
     public void SetMovementSpeed (float _movementSpeed)
@@ -126,6 +127,7 @@ public abstract class ClientHandler : MonoBehaviour
                 if (currentWaypoint.WaypointForceDirection && lookTransform != null)
                 {
                     lookTransform.rotation = Quaternion.LookRotation(currentWaypoint.WaypointEnterDirection);
+                    lookTransform.GetComponentInParent<XROrigin>().MatchOriginUpCameraForward(lookTransform.up, lookTransform.forward);
                 }
             }
         }
