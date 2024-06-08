@@ -1,6 +1,7 @@
 ﻿using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -51,7 +52,7 @@ public class UIManager : MonoBehaviour
     public GameObject panelObject;
     public TMP_Text msgInstructionsText;
     public Button msgButton;
-    public MessageInstantiatorController msgTemplate;
+    public TMP_Text msgChatText;
     public Button msgSendButton;
     public TMP_InputField msgInputText;
     public TMP_Dropdown msgDestinationDrop;
@@ -61,7 +62,13 @@ public class UIManager : MonoBehaviour
 
 
     [Header("PraticeRoom")]
-    public TMP_Text scoreText;
+    public GameObject scoreObject;
+    public TMP_Text scoreUsernameText;
+    public TMP_Text scoreResultText;
+
+
+    private Queue<string> chatMessages;
+    private int chatMessageMax;
 
     private void Awake ()
     {
@@ -75,6 +82,10 @@ public class UIManager : MonoBehaviour
             Debug.Log("Instance already exists, destroying object!");
             Destroy(this);
         }
+
+        chatMessages = new Queue<string>();
+
+        chatMessageMax = 8;
 
         OpenLoginUI();
 
@@ -409,10 +420,11 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    private void ShowScoreText (string text)
+    private void ShowScoreText (string usernameText, string resultText)
     {
-        scoreText.gameObject.SetActive(true);
-        scoreText.text = text;
+        scoreObject.SetActive(true);
+        scoreUsernameText.text = usernameText;
+        scoreResultText.text = resultText;
     }
 
 
@@ -431,10 +443,21 @@ public class UIManager : MonoBehaviour
 
     private void OnMessageReceived (string message)
     {
+        if (chatMessages.Count == chatMessageMax)
+        {
+            chatMessages.Dequeue();
+        }
+
+        chatMessages.Enqueue(message);
+
+        PrintChatMessages();
+
+        /*
         var newMessageComponent = Instantiate(msgTemplate);
         newMessageComponent.SetMessage(message);
         newMessageComponent.transform.SetParent(msgChatListPanel.transform, false);
         newMessageComponent.transform.SetAsLastSibling();
+        */
     }
 
     private void OnPreMsgSelectionChanged ()
@@ -449,5 +472,19 @@ public class UIManager : MonoBehaviour
         {
             msgInputText.text = msgPreDropdown.options[preMsgValue].text;
         }
+    }
+
+    private void PrintChatMessages ()
+    {
+        string msg = "";
+
+        Queue<string> auxQueue = new Queue<string>(chatMessages);
+
+        while (auxQueue.Count > 0)
+        {
+            msg += auxQueue.Dequeue() + "\n";
+        }
+
+        msgChatText.text = msg;
     }
 }

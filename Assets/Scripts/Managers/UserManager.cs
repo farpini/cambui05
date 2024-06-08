@@ -72,7 +72,7 @@ public class UserManager : MonoBehaviour
     private bool hasClientLogged = false;
 
     public Action<WorldState, StateData> OnWorldStateDataChanged;
-    public Action<string> OnScoreChanged;
+    public Action<string, string> OnScoreChanged;
     public Action<List<string>> OnDestinationMsgUsernamesChanged;
     public Action<string> OnReceivedMessage;
 
@@ -671,11 +671,12 @@ public class UserManager : MonoBehaviour
 
     private void PrintQuizResult ()
     {
-        string result = "Pontuação:\n";
+        string usernameText = "";
+        string resultText = "";
 
         foreach (var studentData in stundentQuizData)
         {
-            Debug.Log("Estudante: " + studentData.Key + " resultado:");
+            //Debug.Log("Estudante: " + studentData.Key + " resultado:");
             var count = 0;
             for (int i = 0; i < studentData.Value.epiIds.Length; i++)
             {
@@ -686,12 +687,19 @@ public class UserManager : MonoBehaviour
                     count++;
                 }
 
-                Debug.Log("Pergunta " + i + ": valor " + studentOption);
+                //Debug.Log("Pergunta " + i + ": valor " + studentOption);
             }
-            result += GetMateHandler(studentData.Key).RegisterData.username + ":" + count + " acertos\n";
+
+            usernameText += GetMateHandler(studentData.Key).RegisterData.username + ":\n";
+            resultText += count + " acertos\n";
+            //result += GetMateHandler(studentData.Key).RegisterData.username + ":" + count + " acertos\n";
         }
 
-        OnScoreChanged?.Invoke(result);
+        usernameText += "$";
+
+        string result = usernameText + resultText;
+
+        OnScoreChanged?.Invoke(usernameText, resultText);
 
         FirebaseManager.instance.SetQuizText(result);
     }
@@ -812,11 +820,11 @@ public class UserManager : MonoBehaviour
             if (waypoints[waypointValue].WaypointType == WaypointType.Door)
             {
                 waypoint = waypoints[waypointsRoomOrigins[waypoints[waypointValue].GetComponent<DoorHandler>().roomIndex]];
-                playerHandler.SetPosition(waypoint.transform.position);
                 playerHandler.SetNewWaypoint(waypoint);
+                playerHandler.SetPosition(waypoint.transform.position);
                 playerHandler.SetRotation();
             }
-            else 
+            else
             {
                 playerHandler.SetNewWaypoint(waypoint);
             }
@@ -924,7 +932,11 @@ public class UserManager : MonoBehaviour
     private void OnQuizResultTextChanged (object sender, ValueChangedEventArgs args)
     {
         var message = args.Snapshot.Value.ToString();
-        OnScoreChanged?.Invoke(message);
+        var texts = message.Split('$');
+        if (texts.Length > 1)
+        {
+            OnScoreChanged?.Invoke(texts[0], texts[1]);
+        }
     }
 
     private void OnCharacterMovementSpeedChanged (object sender, ValueChangedEventArgs args)

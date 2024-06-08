@@ -1,3 +1,4 @@
+
 using Firebase.Database;
 using System;
 using TMPro;
@@ -62,9 +63,10 @@ public abstract class ClientHandler : MonoBehaviour
         transform.position = _position;
     }
 
-    public void SetRotation () 
+    public void SetRotation ()
     {
         lookTransform.rotation = Quaternion.Euler(currentWaypoint.WaypointEnterDirection);
+        lookTransform.GetComponentInParent<XROrigin>().MatchOriginUpCameraForward(lookTransform.up, lookTransform.forward);
     }
 
     public void SetMovementSpeed (float _movementSpeed)
@@ -92,7 +94,7 @@ public abstract class ClientHandler : MonoBehaviour
         {
             // set state to moving
             runtimeData.state = ClientState.Walking.ToString();
-            
+
         }
         else
         {
@@ -126,6 +128,7 @@ public abstract class ClientHandler : MonoBehaviour
                 if (currentWaypoint.WaypointForceDirection && lookTransform != null)
                 {
                     lookTransform.rotation = Quaternion.LookRotation(currentWaypoint.WaypointEnterDirection);
+                    lookTransform.GetComponentInParent<XROrigin>().MatchOriginUpCameraForward(lookTransform.up, lookTransform.forward);
                 }
             }
         }
@@ -135,7 +138,7 @@ public abstract class ClientHandler : MonoBehaviour
             {
                 runtimeData.state = ClientState.Walking.ToString();
             }
-            
+
             transform.position = newPosition;
         }
     }
