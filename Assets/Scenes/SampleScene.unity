@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 2138677392}
-  m_IndirectSpecularColor: {r: 0.2850269, g: 0.3713935, b: 0.49601045, a: 1}
+  m_IndirectSpecularColor: {r: 0.28502667, g: 0.37139323, b: 0.49600998, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -658,6 +658,11 @@ PrefabInstance:
         type: 3}
       propertyPath: deskIndex
       value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 3852812874817461395, guid: 79dbf5df1ad85934494624a89e9b55ab,
+        type: 3}
+      propertyPath: waypointForceDirection
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3852812874817461395, guid: 79dbf5df1ad85934494624a89e9b55ab,
         type: 3}
@@ -4489,6 +4494,11 @@ PrefabInstance:
         type: 3}
       propertyPath: deskIndex
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3852812874817461395, guid: 79dbf5df1ad85934494624a89e9b55ab,
+        type: 3}
+      propertyPath: waypointForceDirection
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3852812874817461395, guid: 79dbf5df1ad85934494624a89e9b55ab,
         type: 3}
@@ -9718,6 +9728,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Desk0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3852812874817461395, guid: 79dbf5df1ad85934494624a89e9b55ab,
+        type: 3}
+      propertyPath: waypointForceDirection
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3852812874817461395, guid: 79dbf5df1ad85934494624a89e9b55ab,
         type: 3}
@@ -17441,6 +17456,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3852812874817461395, guid: 79dbf5df1ad85934494624a89e9b55ab,
         type: 3}
+      propertyPath: waypointForceDirection
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3852812874817461395, guid: 79dbf5df1ad85934494624a89e9b55ab,
+        type: 3}
       propertyPath: waypointEnterDirection.z
       value: 1
       objectReference: {fileID: 0}
@@ -21813,6 +21833,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3852812874817461395, guid: 79dbf5df1ad85934494624a89e9b55ab,
         type: 3}
+      propertyPath: waypointForceDirection
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3852812874817461395, guid: 79dbf5df1ad85934494624a89e9b55ab,
+        type: 3}
       propertyPath: waypointEnterDirection.z
       value: 1
       objectReference: {fileID: 0}
@@ -23099,6 +23124,11 @@ PrefabInstance:
     - target: {fileID: 3852812874817461395, guid: 79dbf5df1ad85934494624a89e9b55ab,
         type: 3}
       propertyPath: deskIndex
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3852812874817461395, guid: 79dbf5df1ad85934494624a89e9b55ab,
+        type: 3}
+      propertyPath: waypointForceDirection
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3852812874817461395, guid: 79dbf5df1ad85934494624a89e9b55ab,
@@ -31314,6 +31344,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3852812874817461395, guid: 79dbf5df1ad85934494624a89e9b55ab,
         type: 3}
+      propertyPath: waypointForceDirection
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3852812874817461395, guid: 79dbf5df1ad85934494624a89e9b55ab,
+        type: 3}
       propertyPath: waypointEnterDirection.z
       value: 1
       objectReference: {fileID: 0}
@@ -32114,6 +32149,11 @@ PrefabInstance:
         type: 3}
       propertyPath: deskIndex
       value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 3852812874817461395, guid: 79dbf5df1ad85934494624a89e9b55ab,
+        type: 3}
+      propertyPath: waypointForceDirection
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3852812874817461395, guid: 79dbf5df1ad85934494624a89e9b55ab,
         type: 3}
@@ -33689,6 +33729,11 @@ PrefabInstance:
         type: 3}
       propertyPath: deskIndex
       value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 3852812874817461395, guid: 79dbf5df1ad85934494624a89e9b55ab,
+        type: 3}
+      propertyPath: waypointForceDirection
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3852812874817461395, guid: 79dbf5df1ad85934494624a89e9b55ab,
         type: 3}
@@ -35422,6 +35467,11 @@ PrefabInstance:
         type: 3}
       propertyPath: deskIndex
       value: 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 3852812874817461395, guid: 79dbf5df1ad85934494624a89e9b55ab,
+        type: 3}
+      propertyPath: waypointForceDirection
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3852812874817461395, guid: 79dbf5df1ad85934494624a89e9b55ab,
         type: 3}
@@ -50231,6 +50281,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3852812874817461395, guid: 79dbf5df1ad85934494624a89e9b55ab,
         type: 3}
+      propertyPath: waypointForceDirection
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3852812874817461395, guid: 79dbf5df1ad85934494624a89e9b55ab,
+        type: 3}
       propertyPath: waypointEnterDirection.z
       value: 1
       objectReference: {fileID: 0}
@@ -50589,7 +50644,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1938388308
 Transform:
   m_ObjectHideFlags: 0
@@ -54961,6 +55016,11 @@ PrefabInstance:
         type: 3}
       propertyPath: deskIndex
       value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3852812874817461395, guid: 79dbf5df1ad85934494624a89e9b55ab,
+        type: 3}
+      propertyPath: waypointForceDirection
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3852812874817461395, guid: 79dbf5df1ad85934494624a89e9b55ab,
         type: 3}
