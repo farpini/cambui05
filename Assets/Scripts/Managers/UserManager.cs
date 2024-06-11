@@ -695,11 +695,11 @@ public class UserManager : MonoBehaviour
             //result += GetMateHandler(studentData.Key).RegisterData.username + ":" + count + " acertos\n";
         }
 
+        OnScoreChanged?.Invoke(usernameText, resultText);
+
         usernameText += "$";
 
         string result = usernameText + resultText;
-
-        OnScoreChanged?.Invoke(usernameText, resultText);
 
         FirebaseManager.instance.SetQuizText(result);
     }
