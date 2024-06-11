@@ -128,7 +128,8 @@ public abstract class ClientHandler : MonoBehaviour
                 if (currentWaypoint.WaypointForceDirection && lookTransform != null)
                 {
                     lookTransform.rotation = Quaternion.LookRotation(currentWaypoint.WaypointEnterDirection);
-                    if (this is PlayerHandler)
+
+                    if(this is PlayerHandler)
                     {
                         lookTransform.GetComponentInParent<XROrigin>().MatchOriginUpCameraForward(lookTransform.up, lookTransform.forward);
                     }
