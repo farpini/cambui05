@@ -55,6 +55,7 @@ public class UIManager : MonoBehaviour
     public TMP_Text msgChatText;
     public Button msgSendButton;
     public TMP_InputField msgInputText;
+    public TMP_InputField msgWriteChatText;
     public TMP_Dropdown msgDestinationDrop;
     public TMP_Dropdown msgPreDropdown;
     public GameObject msgChatWindowPanel;
@@ -109,6 +110,7 @@ public class UIManager : MonoBehaviour
         adminMatriculaField.onSelect.AddListener((string s) => OnAdminMatriculaFieldSelected());
         adminEmailField.onSelect.AddListener((string s) => OnAdminEmailFieldSelected());
         adminPasswordField.onSelect.AddListener((string s) => OnAdminPasswordFieldSelected());
+        msgWriteChatText.onSelect.AddListener((string s) => OnChatFieldSelected());
 
         loginButton.onClick.AddListener(() => OnLoginButtonClicked());
         loginRegisterButton.onClick.AddListener(() => OnLoginRegisterButtonClicked());
@@ -157,6 +159,7 @@ public class UIManager : MonoBehaviour
         adminMatriculaField.onSelect.RemoveAllListeners();
         adminEmailField.onSelect.RemoveAllListeners();
         adminPasswordField.onSelect.RemoveAllListeners();
+        msgWriteChatText.onSelect.RemoveAllListeners();
 
         loginButton.onClick.RemoveAllListeners();
         loginRegisterButton.onClick.RemoveAllListeners();
@@ -320,7 +323,6 @@ public class UIManager : MonoBehaviour
         Vector3 targetPosition = loginPasswordField.transform.position + direction * 0.5f + Vector3.up * verticaloffset;
         NonNativeKeyboard.Instance.SetScaleSizeValues(1.8f, 1.8f, 0f, 10f);
         NonNativeKeyboard.Instance.RepositionKeyboard(targetPosition);
-
     }
 
     private void OnRegisterUsernameFieldSelected ()
@@ -399,6 +401,25 @@ public class UIManager : MonoBehaviour
         Vector3 targetPosition = adminPasswordField.transform.position + direction * 0.5f + Vector3.up * verticaloffset;
         NonNativeKeyboard.Instance.SetScaleSizeValues(1.8f, 1.8f, 0f, 10f);
         NonNativeKeyboard.Instance.RepositionKeyboard(targetPosition);
+    }
+
+    private void OnChatFieldSelected ()
+    {
+        msgWriteChatText.text = "";
+        NonNativeKeyboard.Instance.transform.SetParent(msgWriteChatText.transform);
+        NonNativeKeyboard.Instance.InputField = msgWriteChatText;
+        NonNativeKeyboard.Instance.PresentKeyboard();
+        //Vector3 direction = msgWriteChatText.transform.forward;
+        //direction.y = 0f;
+        //direction.Normalize();
+        //float verticaloffset = -1f;
+        //Vector3 targetPosition = msgWriteChatText.transform.position + direction * 0.5f + Vector3.up * verticaloffset;
+        //NonNativeKeyboard.Instance.SetScaleSizeValues(2f, 2f, 0f, 10f);
+        //NonNativeKeyboard.Instance.RepositionKeyboard(targetPosition);
+        var rectTrasnform = NonNativeKeyboard.Instance.GetComponent<RectTransform>();
+        rectTrasnform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+        rectTrasnform.localRotation = Quaternion.identity;
+        rectTrasnform.localPosition = new Vector3(320f, -100f, 0f);
     }
 
     private void ShowWorldStateMessage (WorldState worldState, StateData stateData)
