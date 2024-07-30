@@ -63,6 +63,11 @@ public abstract class ClientHandler : MonoBehaviour
         transform.position = _position;
     }
 
+    public void SetInitAnimation ()
+    {
+
+    }
+
     public void SetRotation ()
     {
         lookTransform.rotation = Quaternion.Euler(currentWaypoint.WaypointEnterDirection);

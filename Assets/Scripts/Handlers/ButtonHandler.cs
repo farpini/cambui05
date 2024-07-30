@@ -6,11 +6,12 @@ using UnityEngine;
 public class ButtonHandler : InteractionHandler
 {
     public ButtonType type;
-    public Action<ButtonType> OnButtonClicked;
+    public int classId;
+    public Action<ButtonType, int> OnButtonClicked;
 
     public void OnButtonSelected()
     {
-        OnButtonClicked?.Invoke(type);
+        OnButtonClicked?.Invoke(type, classId);
     }
 }
 

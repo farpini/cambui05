@@ -62,7 +62,7 @@ public class UserManager : MonoBehaviour
 
     private int quizIndex = 0;
 
-    private int currentUsersConnectedCount = 0;
+    //private int currentUsersConnectedCount = 0;
     private bool isPlayerLogged = false;
 
     private bool registeredToWaypointChanged = false;
@@ -321,18 +321,49 @@ public class UserManager : MonoBehaviour
 
     private void OnPlayerUserRuntimeDataWrite(string _userId)
     {
-        // get all users connected
-        StartCoroutine(FirebaseManager.instance.GetAllUsersRuntimeData(OnAllUsersRuntimeDataRead));
+        // get world settings
+        StartCoroutine(FirebaseManager.instance.GetAllWorldStateData(OnWorldSettingLoaded));
+    }
+
+    private void OnWorldSettingLoaded (Dictionary<string, StateData[]> _worldStateData)
+    {
+        foreach (var door in doorWaypointHolder)
+        {
+            door.gameObject.SetActive(true);
+        }
+
+        if (_worldStateData != null)
+        {
+            WorldStateDict = _worldStateData;
+
+            PrintWorldStateMessage();
+            /*
+            foreach (var worldState in _worldStateData)
+            {
+                Debug.Log("WorldState: " + worldState.Key.ToString());
+                foreach (var stateData in worldState.Value)
+                {
+                    Debug.Log(": " + stateData.stateMsg.ToString());
+                }
+            }
+
+            Debug.Log(_worldStateData.Count);
+            */
+        }
+        else
+        {
+            Debug.LogError("ITS NULL");
+        }
+
+        // start tracking users
+        StartCoroutine(StartTrackingMateLogins());
+
+        //StartCoroutine(FirebaseManager.instance.GetAllUsersRuntimeData(OnAllUsersRuntimeDataRead));
     }
 
     private void OnAllUsersRuntimeDataRead(Dictionary<string, UserRuntimeData> usersDictionary)
     {
-        Debug.LogWarning("OnAllUsersRuntimeDataRead EXECUTED");
-
-        foreach(var door in doorWaypointHolder)
-        {
-            door.gameObject.SetActive(true);
-        }
+        //Debug.LogWarning("OnAllUsersRuntimeDataRead EXECUTED");
 
         foreach (var client in usersDictionary)
         {
@@ -362,13 +393,11 @@ public class UserManager : MonoBehaviour
             }
         }
 
-        currentUsersConnectedCount = usersDictionary.Count;
+        //currentUsersConnectedCount = usersDictionary.Count;
 
-        FirebaseManager.instance.SetUsersConnectedCount(currentUsersConnectedCount);
+        //FirebaseManager.instance.SetUsersConnectedCount(currentUsersConnectedCount);
 
-        StartCoroutine(FirebaseManager.instance.GetAllWorldStateData(OnWorldStateDataRead));
-
-        StartCoroutine(StartTrackingMateLogins());
+        //StartCoroutine(StartTrackingMateLogins());
     }
 
     private void OnWorldStateDataRead (Dictionary<string, StateData[]> _worldStateData)
@@ -399,10 +428,16 @@ public class UserManager : MonoBehaviour
 
     private IEnumerator StartTrackingMateLogins()
     {
-        yield return new WaitForSeconds(5f);
-        FirebaseManager.instance.RegisterUsersConnectedCountChangeValueEvent(OnConnectedCountChanged);
+        while (true)
+        {
+            StartCoroutine(FirebaseManager.instance.GetAllUsersRuntimeData(OnAllUsersRuntimeDataRead));
+            yield return new WaitForSeconds(5f);
+        }
+
+        //FirebaseManager.instance.RegisterUsersConnectedCountChangeValueEvent(OnConnectedCountChanged);
     }
 
+    /*
     public void OnConnectedCountChanged(object sender, ValueChangedEventArgs args)
     {
         FirebaseManager.instance.UnregisterUsersConnectedCountChangeValueEvent(OnConnectedCountChanged);
@@ -415,6 +450,7 @@ public class UserManager : MonoBehaviour
             StartCoroutine(FirebaseManager.instance.GetAllUsersRuntimeData(OnAllUsersRuntimeDataRead));
         }
     }
+    */
 
     /*public void OnLoggedFlagChanged(object sender, ValueChangedEventArgs args)
     {
@@ -488,9 +524,9 @@ public class UserManager : MonoBehaviour
         PrintWorldStateMessage();
     }
 
-    private void OnButtonClicked(ButtonType type)
+    private void OnButtonClicked(ButtonType type, int classId)
     {
-        if (CurrentWorldState == WorldState.WaitingOnClassRoom)
+        if (CurrentWorldState == WorldState.WaitingOnClassRoom && classId == 0)
         {
             switch (type)
             {
@@ -505,7 +541,7 @@ public class UserManager : MonoBehaviour
                 break;
             }
         }
-        else if (CurrentWorldState == WorldState.ClassStarted)
+        else if (CurrentWorldState == WorldState.ClassStarted && classId == 0)
         {
             switch (type)
             {
@@ -522,7 +558,7 @@ public class UserManager : MonoBehaviour
                 break;
             }
         }
-        else if (CurrentWorldState == WorldState.WaitingOnPracticeRoom)
+        else if (CurrentWorldState == WorldState.WaitingOnPracticeRoom && classId == 1)
         {
             switch (type)
             {
@@ -537,7 +573,7 @@ public class UserManager : MonoBehaviour
                 break;
             }
         }
-        else if (CurrentWorldState == WorldState.PracticeStarted)
+        else if (CurrentWorldState == WorldState.PracticeStarted && classId == 1)
         {
             switch (type)
             {
@@ -552,7 +588,7 @@ public class UserManager : MonoBehaviour
                 break;
             }
         }
-        else if (CurrentWorldState == WorldState.QuizStarted)
+        else if (CurrentWorldState == WorldState.QuizStarted && classId == 1)
         {
             switch (type)
             {
@@ -586,6 +622,12 @@ public class UserManager : MonoBehaviour
 
     private void ProfessorEndClass ()
     {
+        if (classImagesIndex != (classImages.Count - 1))
+        {
+            return;
+        }
+
+        classImagesIndex = 0;
         FirebaseManager.instance.SetWorldState(WorldState.WaitingOnPracticeRoom);
         SetWorldState(WorldState.WaitingOnPracticeRoom);
         SetWorldStateArg(0);
@@ -636,7 +678,7 @@ public class UserManager : MonoBehaviour
             return;
         }
 
-        ClearAllStudentEpiId();
+        //ClearAllStudentEpiId();
     }
 
     private void OnAllUsersRuntimeDataReadForQuiz (Dictionary<string, UserRuntimeData> usersDictionary)
@@ -645,6 +687,7 @@ public class UserManager : MonoBehaviour
         {
             if (userData.Key != playerHandler.UserId)
             {
+                Debug.Log("val: " + userData.Value.epiId);
                 stundentQuizData[userData.Key].epiIds[quizIndex] = userData.Value.epiId;
             }
         }
@@ -681,6 +724,8 @@ public class UserManager : MonoBehaviour
             for (int i = 0; i < studentData.Value.epiIds.Length; i++)
             {
                 var studentOption = int.Parse(studentData.Value.epiIds[i]);
+
+                Debug.Log("CHECK: " + studentOption + " and " + WorldSettings.quizAnswerKeys[i]);
 
                 if (studentOption == WorldSettings.quizAnswerKeys[i])
                 {
@@ -1004,6 +1049,11 @@ public class UserManager : MonoBehaviour
         destinationOptions.Add("Geral");
         for (int i = 0; i < mateHandlers.Count; i++)
         {
+            if (mateHandlers[i].RegisterData == null)
+            {
+                continue;
+            }
+
             destinationOptions.Add(mateHandlers[i].RegisterData.username);
         }
 

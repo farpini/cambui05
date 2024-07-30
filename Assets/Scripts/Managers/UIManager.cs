@@ -204,6 +204,7 @@ public class UIManager : MonoBehaviour
     private void OnLoginButtonClicked ()
     {
         FirebaseManager.instance.OnLoginButtonClicked(loginEmailField.text, loginPasswordField.text);
+        NonNativeKeyboard.Instance.gameObject.SetActive(false);
     }
 
     private void OnLoginRegisterButtonClicked ()
@@ -232,6 +233,8 @@ public class UIManager : MonoBehaviour
     {
         UserManager.instance.OnSendMsgButtonClicked(msgInputText.text, msgDestinationDrop.options[msgDestinationDrop.value].text,
             msgDestinationDrop.value);
+        msgInputText.text = "";
+        NonNativeKeyboard.Instance.gameObject.SetActive(false);
         msgPreDropdown.value = 0;
     }
 
