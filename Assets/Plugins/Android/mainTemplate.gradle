@@ -12,6 +12,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-common:20.4.2' // Assets/Firebase/Editor/AppDependencies.xml:13
     implementation 'com.google.firebase:firebase-database:20.3.0' // Assets/Firebase/Editor/DatabaseDependencies.xml:13
     implementation 'com.google.firebase:firebase-database-unity:11.7.0' // Assets/Firebase/Editor/DatabaseDependencies.xml:22
+    implementation 'com.google.firebase:firebase-functions:20.4.0' // Assets/Firebase/Editor/FunctionsDependencies.xml:13
+    implementation 'com.google.firebase:firebase-functions-unity:11.7.0' // Assets/Firebase/Editor/FunctionsDependencies.xml:20
     implementation 'com.google.firebase:firebase-iid:21.1.0' // Assets/Firebase/Editor/MessagingDependencies.xml:17
     implementation 'com.google.firebase:firebase-messaging:23.4.0' // Assets/Firebase/Editor/MessagingDependencies.xml:13
     implementation 'com.google.firebase:firebase-messaging-unity:11.7.0' // Assets/Firebase/Editor/MessagingDependencies.xml:24
