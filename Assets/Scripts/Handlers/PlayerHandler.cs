@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class PlayerHandler : ClientHandler
 {
+    public ExtinguisherHandler extinguisher;
+
     public float cameraSpeed = 70f;
     public float cameraVerticalRotationMax = 40f;
 
@@ -126,13 +128,18 @@ public class PlayerHandler : ClientHandler
     {
         if (Input.GetKey(KeyCode.Alpha1)) // sim take extinguisher
         {
-
+            extinguisher.gameObject.SetActive(true);
             OnFireStateChanged?.Invoke(1);
         }
         else if (Input.GetKey(KeyCode.Alpha2)) // sim extinguisher fire
         {
-
+            extinguisher.gameObject.SetActive(false);
+            extinguisher.DeactivateExtinguisher();
             OnFireStateChanged?.Invoke(2);
+        }
+        else if (Input.GetKey(KeyCode.Alpha5))
+        {
+            extinguisher.ActivateExtinguisher();
         }
     }
 }
