@@ -19,7 +19,7 @@ public class MateHandler : ClientHandler
     public TextMeshPro usernameLabel;
 
     public Action<string, int> OnMateWaypointChanged;
-    
+    public Action<string, int> OnMateFireStateChanged;
 
 
     public void Awake ()
@@ -72,6 +72,11 @@ public class MateHandler : ClientHandler
     public void OnMateWaypointValueChanged (object sender, ValueChangedEventArgs args)
     {
         OnMateWaypointChanged?.Invoke(UserId, int.Parse(args.Snapshot.Value.ToString()));
+    }
+
+    public void OnMateFireStateValueChanged (object sender, ValueChangedEventArgs args)
+    {
+        OnMateFireStateChanged?.Invoke(UserId, int.Parse(args.Snapshot.Value.ToString()));
     }
 
     public override void SetUsernameLabel ()

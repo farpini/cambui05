@@ -1,7 +1,6 @@
 ﻿using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,7 +11,6 @@ public class UIManager : MonoBehaviour
 
     public NonNativeKeyboard XRKeyboard;
 
-    //Screen object variables
     [Header("Windows")]
     public GameObject backgroundUI;
     public GameObject loginUI;
@@ -54,13 +52,13 @@ public class UIManager : MonoBehaviour
     public Button msgButton;
     public TMP_Text msgChatText;
     public Button msgSendButton;
+    public GameObject msgNewMsgGameObject;
     public TMP_InputField msgInputText;
     public TMP_InputField msgWriteChatText;
     public TMP_Dropdown msgDestinationDrop;
     public TMP_Dropdown msgPreDropdown;
     public GameObject msgChatWindowPanel;
     public GameObject msgChatListPanel;
-
 
     [Header("PraticeRoom")]
     public GameObject scoreObject;
@@ -70,6 +68,8 @@ public class UIManager : MonoBehaviour
 
     private Queue<string> chatMessages;
     private int chatMessageMax;
+    private bool newMessage;
+
 
     private void Awake ()
     {
@@ -87,6 +87,7 @@ public class UIManager : MonoBehaviour
         chatMessages = new Queue<string>();
 
         chatMessageMax = 8;
+        newMessage = false;
 
         OpenLoginUI();
 
@@ -227,6 +228,7 @@ public class UIManager : MonoBehaviour
     private void OnMessageButtonClicked ()
     {
         msgChatWindowPanel.gameObject.SetActive(!msgChatWindowPanel.activeSelf);
+        newMessage = false;
     }
 
     private void OnMessageSendButtonClicked ()
@@ -412,13 +414,6 @@ public class UIManager : MonoBehaviour
         NonNativeKeyboard.Instance.transform.SetParent(msgWriteChatText.transform);
         NonNativeKeyboard.Instance.InputField = msgWriteChatText;
         NonNativeKeyboard.Instance.PresentKeyboard();
-        //Vector3 direction = msgWriteChatText.transform.forward;
-        //direction.y = 0f;
-        //direction.Normalize();
-        //float verticaloffset = -1f;
-        //Vector3 targetPosition = msgWriteChatText.transform.position + direction * 0.5f + Vector3.up * verticaloffset;
-        //NonNativeKeyboard.Instance.SetScaleSizeValues(2f, 2f, 0f, 10f);
-        //NonNativeKeyboard.Instance.RepositionKeyboard(targetPosition);
         var rectTrasnform = NonNativeKeyboard.Instance.GetComponent<RectTransform>();
         rectTrasnform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
         rectTrasnform.localRotation = Quaternion.identity;
@@ -476,12 +471,11 @@ public class UIManager : MonoBehaviour
 
         PrintChatMessages();
 
-        /*
-        var newMessageComponent = Instantiate(msgTemplate);
-        newMessageComponent.SetMessage(message);
-        newMessageComponent.transform.SetParent(msgChatListPanel.transform, false);
-        newMessageComponent.transform.SetAsLastSibling();
-        */
+        if (message != "")
+        {
+            newMessage = true;
+            StartCoroutine(NewMessageEffect());
+        }
     }
 
     private void OnPreMsgSelectionChanged ()
@@ -510,5 +504,16 @@ public class UIManager : MonoBehaviour
         }
 
         msgChatText.text = msg;
+    }
+
+    private IEnumerator NewMessageEffect ()
+    {
+        while (newMessage)
+        {
+            msgNewMsgGameObject.SetActive(!msgNewMsgGameObject.activeSelf);
+            yield return new WaitForSeconds(0.5f);
+        }
+
+        msgNewMsgGameObject.SetActive(false);
     }
 }

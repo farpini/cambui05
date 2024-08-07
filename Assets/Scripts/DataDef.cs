@@ -66,6 +66,8 @@ public class UserRegisterData
     public string genero;
     public string tipo;
 
+    public bool IsProfessor => (tipo == "professor");
+
     public UserRegisterData (string _u, string _m, string _g, string _t)
     {
         username = _u;
@@ -83,14 +85,16 @@ public class UserRuntimeData
     public string state;
     public string message;
     public string epiId;
+    public string fireState;
 
-    public UserRuntimeData(int _w, int _rid, ClientState _cs, string _message, int _epiId)
+    public UserRuntimeData(int _w, int _rid, ClientState _cs, string _message, int _epiId, int _fireState)
     {
         waypoint = _w.ToString();
         roomId = _rid.ToString();
         state = _cs.ToString();
         message = _message;
         epiId = _epiId.ToString();
+        fireState = _fireState.ToString();
     }
 }
 
@@ -108,7 +112,7 @@ public enum UserRegisterAttribute
 
 public enum UserRuntimeAttribute
 {
-    waypoint, roomId, state, message, epiId
+    waypoint, roomId, state, message, epiId, fireState
 }
 
 public enum ClientGender
@@ -128,7 +132,7 @@ public enum ClientStatus
 
 public enum WorldState
 {
-    WaitingOnClassRoom, ClassStarted, WaitingOnPracticeRoom, PracticeStarted, QuizStarted, QuizFinished
+    WaitingOnClassRoom, ClassStarted, WaitingOnPracticeRoom, PracticeStarted, FireAccident, QuizStarted, QuizFinished
 }
 
 // WaitingOnClassRoom

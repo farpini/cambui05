@@ -1,19 +1,10 @@
-using Firebase;
 using Firebase.Database;
-using Firebase.Extensions;
-using Google.MiniJSON;
-using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-//using System.Runtime.Remoting.Messaging;
-//using System.Runtime.Remoting.Metadata;
-using Unity.Mathematics;
-//using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Analytics;
 using UnityEngine.XR.Interaction.Toolkit;
 using TMPro;
 
@@ -34,9 +25,9 @@ public class UserManager : MonoBehaviour
     public GameObject XRCameraOffsetGO;
     public GameObject XRSimulatorGO;
     public XRInteractionManager XRManager;
-    public GameObject transformToTest;
     public WaypointHandler waypointToDropEPI;
     public Transform dropTransform;
+    public FireHandler fireHandler;
 
     public List<ButtonHandler> buttons;
 
@@ -50,7 +41,8 @@ public class UserManager : MonoBehaviour
     public List<Texture> classImages;
     private int classImagesIndex;
 
-    private Dictionary<string, StudentQuizData> stundentQuizData;
+    private Dictionary<string, StudentQuizData> studentQuizData;
+    private Dictionary<string, int> studentFireStateDict;
 
     public int[] waypointsRoomOrigins = new int[3];
 
@@ -71,6 +63,8 @@ public class UserManager : MonoBehaviour
     private bool checkingClientLogged = false;
     private bool hasClientLogged = false;
 
+    private bool fireAccidentDone;
+
     public Action<WorldState, StateData> OnWorldStateDataChanged;
     public Action<string, string> OnScoreChanged;
     public Action<List<string>> OnDestinationMsgUsernamesChanged;
@@ -89,8 +83,13 @@ public class UserManager : MonoBehaviour
             return;
         }
 
+        fireHandler.DeactivateFire();
+
         mateHandlers = new();
-        stundentQuizData = new();
+        studentQuizData = new();
+        studentFireStateDict = new();
+
+        fireAccidentDone = false;
 
         WorldStateDict = new();
 
@@ -123,19 +122,6 @@ public class UserManager : MonoBehaviour
         }
 
         UpdateMatesLabel();
-
-        /*
-        if (Input.GetKeyDown(KeyCode.UpArrow))
-        {
-            var message = "Olá a todos";
-            SendClientMessage(playerHandler.UserId, message);
-        }
-        */
- 
-
-        //Debug.LogWarning("RoomId: " + roomId);
-
-        //if (playerHandler.RuntimeData.roomId != null) roomId = int.Parse(playerHandler.RuntimeData.roomId);
     }
 
     private void OnDestroy()
@@ -171,7 +157,7 @@ public class UserManager : MonoBehaviour
     {
         foreach (var button in buttons)
         {
-            if (playerHandler.RegisterData.tipo == "aluno" || !button.waypointProfessorAccess) button.gameObject.SetActive(false); 
+            if (!playerHandler.RegisterData.IsProfessor || !button.waypointProfessorAccess) button.gameObject.SetActive(false); 
         }
     }
 
@@ -247,6 +233,7 @@ public class UserManager : MonoBehaviour
         playerHandler.SetPosition(waypoints[0].transform.position);
         playerHandler.SetMovementSpeed(WorldSettings.characterSpeed);
         playerHandler.OnClientWaypointReached += OnPlayerWaypointReached;
+        playerHandler.OnFireStateChanged += OnPlayerFireStateChanged;
 
         FirebaseManager.instance.RegisterCharacterMovementSpeedChangeValueEvent(OnCharacterMovementSpeedChanged);
     }
@@ -256,20 +243,6 @@ public class UserManager : MonoBehaviour
         FirebaseManager.instance.OnLoginSuccess -= OnLogin;
 
         Debug.Log("Login success: " + _userId);
-
-        /*
-        FirebaseManager.instance.SetWorldStateData(WorldState.WaitingOnClassRoom, new StateData[]
-        {
-            new StateData { stateMsg = "aaaa", stateMsgDuration = 2f, stateMsgToShow = true },
-            new StateData { stateMsg = "bbbb", stateMsgDuration = 25f, stateMsgToShow = false }
-        });
-
-        FirebaseManager.instance.SetWorldStateData(WorldState.ClassStarted, new StateData[]
-        {
-            new StateData { stateMsg = "aa123123aa", stateMsgDuration = 21f, stateMsgToShow = true },
-            new StateData { stateMsg = "bbb123123b", stateMsgDuration = 251f, stateMsgToShow = false }
-        });
-        */
 
         playerHandler.SetUserId(_userId);
 
@@ -281,10 +254,8 @@ public class UserManager : MonoBehaviour
 
         isPlayerLogged = true;
 
-        
-
         // set the player runtime data to the database, it will continue in OnPlayerUserRuntimeDataWrite
-        FirebaseManager.instance.SetUserRuntimeData(_userId, new UserRuntimeData(0, 0, ClientState.Idle, "", -1), OnPlayerUserRuntimeDataWrite);
+        FirebaseManager.instance.SetUserRuntimeData(_userId, new UserRuntimeData(0, 0, ClientState.Idle, "", -1, 0), OnPlayerUserRuntimeDataWrite);
 
         //StartCoroutine(PostLoginWaitForLoggedFlag(_userId));
     }
@@ -387,7 +358,7 @@ public class UserManager : MonoBehaviour
             {
                 if (!playerHandler.IsClientInitialized)
                 {
-                    var playerRuntimeDataStart = new UserRuntimeData(0, 0, ClientState.Idle, "", -1);
+                    var playerRuntimeDataStart = new UserRuntimeData(0, 0, ClientState.Idle, "", -1, 0);
                     UpdatePlayerHandler(clientUserId, playerRuntimeDataStart);
                 }
             }
@@ -486,14 +457,14 @@ public class UserManager : MonoBehaviour
 
     private void OnPlayerRegisterDataRead(string userId, UserRegisterData userRegisterData)
     {
-        if (userRegisterData.tipo == "professor")
+        if (userRegisterData.IsProfessor)
         {
             FirebaseManager.instance.SetWorldState(WorldState.WaitingOnClassRoom);
             FirebaseManager.instance.SetWorldStateArg(0);
         }
         else
         {
-            stundentQuizData.Add(playerHandler.UserId, new StudentQuizData { epiIds = new string[WorldSettings.quizAnswerKeys.Length] });
+            studentQuizData.Add(playerHandler.UserId, new StudentQuizData { epiIds = new string[WorldSettings.quizAnswerKeys.Length] });
             FirebaseManager.instance.RegisterQuizResultTextChangeValueEvent(OnQuizResultTextChanged);
         }
 
@@ -512,16 +483,27 @@ public class UserManager : MonoBehaviour
     {
         CurrentWorldStateArg = 0;
         CurrentWorldState = worldState;
-        if(worldState == WorldState.ClassStarted) boardImage.gameObject.SetActive(true);
+        if (worldState == WorldState.ClassStarted) boardImage.gameObject.SetActive(true);
+        if (worldState == WorldState.FireAccident) fireHandler.ActivateFire();
         PrintWorldStateMessage();
     }
 
     private void SetWorldStateArg(int worldStateArg)
     {
         CurrentWorldStateArg = worldStateArg;
-        classImagesIndex = CurrentWorldStateArg;
-        boardImage.texture = classImages[classImagesIndex];
-        PrintWorldStateMessage();
+        if (CurrentWorldState == WorldState.ClassStarted)
+        {
+            classImagesIndex = CurrentWorldStateArg;
+            boardImage.texture = classImages[classImagesIndex];
+        }
+        if (CurrentWorldState == WorldState.FireAccident && playerHandler.RegisterData.IsProfessor)
+        {
+            PrintWorldStateMessageDirectly(new StateData { stateMsg = "Aguardando alunos apagarem o fogo.", stateMsgDuration = 0, stateMsgToShow = true });
+        }
+        else
+        {
+            PrintWorldStateMessage();
+        }
     }
 
     private void OnButtonClicked(ButtonType type, int classId)
@@ -580,9 +562,21 @@ public class UserManager : MonoBehaviour
                 case ButtonType.Next:
                 break;
                 case ButtonType.Start:
-                ProfessorStartQuiz();
+                ProfessorStartFireAccident();
                 break;
                 case ButtonType.Previous:
+                break;
+                default:
+                break;
+            }
+        }
+        else if (CurrentWorldState == WorldState.FireAccident && classId == 1 && fireAccidentDone)
+        {
+            switch (type)
+            {
+                case ButtonType.Next:
+                case ButtonType.Start:
+                ProfessorStartQuiz();
                 break;
                 default:
                 break;
@@ -598,7 +592,6 @@ public class UserManager : MonoBehaviour
                 case ButtonType.Start:
                 break;
                 case ButtonType.Previous:
-
                 break;
                 default:
                 break;
@@ -653,6 +646,14 @@ public class UserManager : MonoBehaviour
         }
     }
 
+    private void ProfessorStartFireAccident ()
+    {
+        FirebaseManager.instance.SetWorldState(WorldState.FireAccident);
+        SetWorldState(WorldState.FireAccident);
+        FirebaseManager.instance.SetWorldStateArg(0);
+        SetWorldStateArg(0);
+    }
+
     private void ProfessorStartQuiz ()
     {
         ClearAllStudentEpiId();
@@ -688,7 +689,7 @@ public class UserManager : MonoBehaviour
             if (userData.Key != playerHandler.UserId)
             {
                 Debug.Log("val: " + userData.Value.epiId);
-                stundentQuizData[userData.Key].epiIds[quizIndex] = userData.Value.epiId;
+                studentQuizData[userData.Key].epiIds[quizIndex] = userData.Value.epiId;
             }
         }
 
@@ -717,7 +718,7 @@ public class UserManager : MonoBehaviour
         string usernameText = "";
         string resultText = "";
 
-        foreach (var studentData in stundentQuizData)
+        foreach (var studentData in studentQuizData)
         {
             //Debug.Log("Estudante: " + studentData.Key + " resultado:");
             var count = 0;
@@ -751,7 +752,7 @@ public class UserManager : MonoBehaviour
 
     private void ClearAllStudentEpiId ()
     {
-        if (playerHandler.RegisterData.tipo == "professor")
+        if (playerHandler.RegisterData.IsProfessor)
         {
             for (int i = 0; i < mateHandlers.Count; i++)
             {
@@ -806,6 +807,11 @@ public class UserManager : MonoBehaviour
         mateHandler.OnClientWaypointReached += OnMateWaypointReached;
         mateHandlers.Add(mateHandler);
 
+        if (!studentFireStateDict.TryGetValue(_userId, out var value))
+        {
+            studentFireStateDict.Add(_userId, 0);
+        }
+        
         // it will continue the creation OnMateRegisterDataRead
         StartCoroutine(FirebaseManager.instance.GetUserRegisterData(_userId, OnMateRegisterDataRead));
     }
@@ -831,9 +837,20 @@ public class UserManager : MonoBehaviour
 
             UpdateUsernameDestinationMsg();
 
-            if (mateHandler.RegisterData.tipo == "aluno")
+            if (!mateHandler.RegisterData.IsProfessor)
             {
-                stundentQuizData.Add(mateHandler.UserId, new StudentQuizData { epiIds = new string[WorldSettings.quizAnswerKeys.Length] });
+                studentQuizData.Add(mateHandler.UserId, new StudentQuizData { epiIds = new string[WorldSettings.quizAnswerKeys.Length] });
+
+                if (playerHandler != null && playerHandler.IsClientInitialized)
+                {
+                    if (playerHandler.RegisterData.IsProfessor)
+                    {
+                        FirebaseManager.instance.
+                            RegisterUserRuntimeAttributeChangeValueEvent(userId, UserRuntimeAttribute.fireState,
+                            mateHandler.OnMateFireStateValueChanged);
+                        mateHandler.OnMateFireStateChanged += OnStudentFireStateValueChanged;
+                    }
+                }
             }
         }
     }
@@ -940,6 +957,11 @@ public class UserManager : MonoBehaviour
         {
             Debug.LogWarning("Not present in dict.");
         }
+    }
+
+    private void PrintWorldStateMessageDirectly (StateData stateData)
+    {
+        OnWorldStateDataChanged?.Invoke(CurrentWorldState, stateData);
     }
 
     private void OnObjectPicked (ObjectHandler obj)
@@ -1064,5 +1086,68 @@ public class UserManager : MonoBehaviour
     {
         var message = args.Snapshot.Value.ToString();
         OnReceivedMessage?.Invoke(message);
+    }
+
+    private void OnStudentFireStateValueChanged (string _userId, int fireStateValue)
+    {
+        if (fireAccidentDone)
+        {
+            return;
+        }
+
+        if (studentFireStateDict.TryGetValue(_userId, out var value))
+        {
+            studentFireStateDict[_userId] = fireStateValue;
+        }
+
+        var allDone = true;
+
+        // check whether all students are in the last fire state
+        foreach (var student in studentFireStateDict)
+        {
+            if (student.Value != 2)
+            {
+                allDone = false;
+                break;
+            }
+        }
+
+        if (allDone)
+        {
+            fireAccidentDone = true;
+            fireHandler.DeactivateFire();
+            PrintWorldStateMessageDirectly(new StateData { 
+                stateMsg = "Todos alunos apagaram o fogo. Prossiga a aula", stateMsgDuration = 0, stateMsgToShow = true });
+        }
+    }
+
+    private void OnPlayerFireStateChanged (int _fireStateValue)
+    {
+        if (_fireStateValue > 2)
+        {
+            return;
+        }
+
+        if (_fireStateValue == 2)
+        {
+            fireHandler.DeactivateFire();
+        }
+        playerHandler.RuntimeData.fireState = _fireStateValue.ToString();
+        FirebaseManager.instance.SetUserRuntimeAttribute(playerHandler.UserId, UserRuntimeAttribute.fireState, _fireStateValue);
+
+        if (!playerHandler.RegisterData.IsProfessor)
+        {
+            if (WorldStateDict.TryGetValue(CurrentWorldState.ToString(), out var stateData))
+            {
+                if (stateData.Length > _fireStateValue)
+                {
+                    OnWorldStateDataChanged?.Invoke(CurrentWorldState, stateData[_fireStateValue]);
+                }
+            }
+            else
+            {
+                Debug.LogWarning("Not present in dict.");
+            }
+        }
     }
 }

@@ -12,6 +12,7 @@ public class PlayerHandler : ClientHandler
     private Transform oculusTransform;
 
     public Action<ButtonType> OnButtonClicked;
+    public Action<int> OnFireStateChanged;
 
 
     public void Update ()
@@ -23,6 +24,7 @@ public class PlayerHandler : ClientHandler
 
         CheckButtonClick();
         CheckMovement();
+        CheckFireEvents();
         UpdatePosition();
     }
 
@@ -117,6 +119,20 @@ public class PlayerHandler : ClientHandler
             }
             cameraRotation.x = cameraRotationX;
             Camera.main.gameObject.transform.eulerAngles = cameraRotation;
+        }
+    }
+
+    private void CheckFireEvents ()
+    {
+        if (Input.GetKey(KeyCode.Alpha1)) // sim take extinguisher
+        {
+
+            OnFireStateChanged?.Invoke(1);
+        }
+        else if (Input.GetKey(KeyCode.Alpha2)) // sim extinguisher fire
+        {
+
+            OnFireStateChanged?.Invoke(2);
         }
     }
 }
