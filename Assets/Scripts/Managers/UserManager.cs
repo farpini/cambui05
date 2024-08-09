@@ -492,8 +492,14 @@ public class UserManager : MonoBehaviour
     {
         CurrentWorldStateArg = 0;
         CurrentWorldState = worldState;
-        if (worldState == WorldState.ClassStarted) boardImage.gameObject.SetActive(true);
-        if (worldState == WorldState.FireAccident) fireHandler.ActivateFire();
+        if (worldState == WorldState.ClassStarted)
+        {
+            boardImage.gameObject.SetActive(true);
+        }
+        if (worldState == WorldState.FireAccident)
+        {
+            fireHandler.ActivateFire();
+        }
         PrintWorldStateMessage();
     }
 
@@ -816,11 +822,6 @@ public class UserManager : MonoBehaviour
         mateHandler.OnClientWaypointReached += OnMateWaypointReached;
         mateHandlers.Add(mateHandler);
 
-        if (!studentFireStateDict.TryGetValue(_userId, out var value))
-        {
-            studentFireStateDict.Add(_userId, 0);
-        }
-        
         // it will continue the creation OnMateRegisterDataRead
         StartCoroutine(FirebaseManager.instance.GetUserRegisterData(_userId, OnMateRegisterDataRead));
     }
@@ -830,6 +831,14 @@ public class UserManager : MonoBehaviour
         var mateHandler = GetMateHandler(userId);
         if (mateHandler != null)
         {
+            if (userRegisterData.IsProfessor)
+            {
+                if (!studentFireStateDict.TryGetValue(userId, out var value))
+                {
+                    studentFireStateDict.Add(userId, 0);
+                }
+            }
+
             mateHandler.SetUserRegisterData(userRegisterData);
             var waypointIdx = int.Parse(mateHandler.RuntimeData.waypoint);
             mateHandler.ChangeModel();
@@ -1103,6 +1112,8 @@ public class UserManager : MonoBehaviour
         {
             return;
         }
+
+        Debug.LogWarning("userId " + _userId + "va: " + fireStateValue);
 
         if (studentFireStateDict.TryGetValue(_userId, out var value))
         {

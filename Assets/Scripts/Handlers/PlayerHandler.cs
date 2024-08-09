@@ -49,8 +49,13 @@ public class PlayerHandler : ClientHandler
         oculusTransform = xrgo.transform;
         lookTransform = cameraOffSet.transform;
         extinguisher = extinguisherHandler;
-        extinguisher.OnFireExtinguisherStateChanged += OnFireStateChanged;
+        extinguisher.OnFireExtinguisherStateChanged += OnFireExtinguisherStateChanged;
         SetCamera(true);
+    }
+
+    private void OnFireExtinguisherStateChanged (int stateValue)
+    {
+        OnFireStateChanged?.Invoke(stateValue);
     }
 
     private void CheckButtonClick()
