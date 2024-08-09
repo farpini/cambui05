@@ -26,7 +26,6 @@ public class PlayerHandler : ClientHandler
 
         CheckButtonClick();
         CheckMovement();
-        CheckFireEvents();
         UpdatePosition();
     }
 
@@ -45,10 +44,12 @@ public class PlayerHandler : ClientHandler
         }
     }
 
-    public void SetXRGO (GameObject xrgo, GameObject cameraOffSet)
+    public void SetXRGO (GameObject xrgo, GameObject cameraOffSet, ExtinguisherHandler extinguisherHandler)
     {
         oculusTransform = xrgo.transform;
         lookTransform = cameraOffSet.transform;
+        extinguisher = extinguisherHandler;
+        extinguisher.OnFireExtinguisherStateChanged += OnFireStateChanged;
         SetCamera(true);
     }
 
@@ -121,25 +122,6 @@ public class PlayerHandler : ClientHandler
             }
             cameraRotation.x = cameraRotationX;
             Camera.main.gameObject.transform.eulerAngles = cameraRotation;
-        }
-    }
-
-    private void CheckFireEvents ()
-    {
-        if (Input.GetKey(KeyCode.Alpha1)) // sim take extinguisher
-        {
-            extinguisher.gameObject.SetActive(true);
-            OnFireStateChanged?.Invoke(1);
-        }
-        else if (Input.GetKey(KeyCode.Alpha2)) // sim extinguisher fire
-        {
-            extinguisher.gameObject.SetActive(false);
-            extinguisher.DeactivateExtinguisher();
-            OnFireStateChanged?.Invoke(2);
-        }
-        else if (Input.GetKey(KeyCode.Alpha5))
-        {
-            extinguisher.ActivateExtinguisher();
         }
     }
 }

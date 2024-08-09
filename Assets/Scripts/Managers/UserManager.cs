@@ -28,6 +28,7 @@ public class UserManager : MonoBehaviour
     public WaypointHandler waypointToDropEPI;
     public Transform dropTransform;
     public FireHandler fireHandler;
+    public ExtinguisherHandler extinguisherHandler;
 
     public List<ButtonHandler> buttons;
 
@@ -102,6 +103,7 @@ public class UserManager : MonoBehaviour
         SetXRButton();
         LoadWaypointHandlers();
         InitializeObjectHandlers();
+        InitializeExtinguisher();
     }
 
     private void Update()
@@ -130,6 +132,13 @@ public class UserManager : MonoBehaviour
         {
             //FirebaseManager.instance.UnregisterUsersLoggedFlagChangeValueEvent(OnLoggedFlagChanged);
         }
+    }
+
+    private void InitializeExtinguisher ()
+    {
+        //fireHandler.ActivateFire();
+        extinguisherHandler.Initialize();
+        //extinguisherHandler.OnFireExtinguisherStateChanged += OnFireExtinguished;
     }
 
     private void OnFirebaseInitialized ()
@@ -229,7 +238,7 @@ public class UserManager : MonoBehaviour
     private void CreatePlayerHandler()
     {
         playerHandler = Instantiate(playerHandlerPrefab);
-        playerHandler.SetXRGO(XRGO, XRCameraOffsetGO);
+        playerHandler.SetXRGO(XRGO, XRCameraOffsetGO, extinguisherHandler);
         playerHandler.SetPosition(waypoints[0].transform.position);
         playerHandler.SetMovementSpeed(WorldSettings.characterSpeed);
         playerHandler.OnClientWaypointReached += OnPlayerWaypointReached;
@@ -1132,6 +1141,7 @@ public class UserManager : MonoBehaviour
         {
             fireHandler.DeactivateFire();
         }
+
         playerHandler.RuntimeData.fireState = _fireStateValue.ToString();
         FirebaseManager.instance.SetUserRuntimeAttribute(playerHandler.UserId, UserRuntimeAttribute.fireState, _fireStateValue);
 
