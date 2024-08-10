@@ -66,6 +66,8 @@ public abstract class ClientHandler : MonoBehaviour
     public void SetInitAnimation ()
     {
 
+
+
     }
 
     public void SetRotation ()
@@ -99,12 +101,14 @@ public abstract class ClientHandler : MonoBehaviour
         {
             // set state to moving
             runtimeData.state = ClientState.Walking.ToString();
-
         }
         else
         {
-            runtimeData.state = ClientState.Idle.ToString();
+            runtimeData.state = waypointHandler.WaypointType == WaypointType.Floor ? ClientState.Idle.ToString() :
+                ClientState.Sit.ToString();
         }
+
+        FirebaseManager.instance.SetUserRuntimeAttribute(UserId, UserRuntimeAttribute.state, runtimeData.state);
 
         // always stand-up when a new waypoint is set
         SetCamera(true);
@@ -120,6 +124,8 @@ public abstract class ClientHandler : MonoBehaviour
         var currentPosition = transform.position;
         var targetPosition = currentWaypoint.transform.position;
         var newPosition = Vector3.MoveTowards(currentPosition, targetPosition, movementSpeed);
+
+        var currentState = runtimeData.state;
 
         if (IsCloseEnoughToTarget(newPosition, targetPosition))
         {
@@ -150,6 +156,11 @@ public abstract class ClientHandler : MonoBehaviour
 
             transform.position = newPosition;
         }
+
+        if (currentState != runtimeData.state)
+        {
+            FirebaseManager.instance.SetUserRuntimeAttribute(UserId, UserRuntimeAttribute.state, runtimeData.state);
+        }
     }
 
     private bool IsCloseEnoughToTarget (Vector3 currentPosition, Vector3 targetPosition)
@@ -159,6 +170,8 @@ public abstract class ClientHandler : MonoBehaviour
 
     private void OnWaypointPositionReached ()
     {
+        var currentState = runtimeData.state;
+
         if (currentWaypoint.WaypointType == WaypointType.Desk)
         {
             //animator.SetInteger("stateValue", 2);
@@ -175,7 +188,9 @@ public abstract class ClientHandler : MonoBehaviour
         {
             //animator.SetInteger("stateValue", 0);
 
+            Debug.LogWarning("B1");
             runtimeData.state = ClientState.Idle.ToString();
+            //FirebaseManager.instance.SetUserRuntimeAttribute(UserId, UserRuntimeAttribute.state, runtimeData.state);
 
             if (this is MateHandler)
             {
@@ -190,11 +205,18 @@ public abstract class ClientHandler : MonoBehaviour
         else if (currentWaypoint.WaypointType == WaypointType.Door)
         {
             Debug.Log("Porta");
-            FirebaseManager.instance.SetUserRuntimeAttribute(userId, UserRuntimeAttribute.roomId, currentWaypoint.GetComponent<DoorHandler>().roomIndex.ToString());
+            var currentRoomIdx = runtimeData.roomId;
+
+            if (currentRoomIdx != currentWaypoint.GetComponent<DoorHandler>().roomIndex.ToString())
+            {
+                FirebaseManager.instance.SetUserRuntimeAttribute(userId, UserRuntimeAttribute.roomId, currentWaypoint.GetComponent<DoorHandler>().roomIndex.ToString());
+            }
+
             //UserManager.instance.roomId = int.Parse(runtimeData.roomId);
             OnRoomChange?.Invoke(currentWaypoint.GetComponent<DoorHandler>().roomIndex);
             //UserManager.instance.LoadWaypointHandlers();
         }
+
 
         OnClientWaypointReached?.Invoke(this, currentWaypoint);
     }

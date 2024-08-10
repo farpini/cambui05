@@ -57,6 +57,7 @@ public class UserManager : MonoBehaviour
 
     //private int currentUsersConnectedCount = 0;
     private bool isPlayerLogged = false;
+    
 
     private bool registeredToWaypointChanged = false;
     private bool registeredToLoggedFlagChanged = false;
@@ -831,18 +832,16 @@ public class UserManager : MonoBehaviour
         var mateHandler = GetMateHandler(userId);
         if (mateHandler != null)
         {
-            if (userRegisterData.IsProfessor)
+            if (!studentFireStateDict.TryGetValue(userId, out var value))
             {
-                if (!studentFireStateDict.TryGetValue(userId, out var value))
-                {
-                    studentFireStateDict.Add(userId, 0);
-                }
+                studentFireStateDict.Add(userId, 0);
             }
 
             mateHandler.SetUserRegisterData(userRegisterData);
             var waypointIdx = int.Parse(mateHandler.RuntimeData.waypoint);
             mateHandler.ChangeModel();
             mateHandler.SetPosition(waypoints[waypointIdx].transform.position);
+            mateHandler.SetInitAnimation();
             mateHandler.OnMateWaypointChanged = OnClientWaypointChanged;
             mateHandler.InitializeClient();
             FirebaseManager.instance.
@@ -1113,11 +1112,12 @@ public class UserManager : MonoBehaviour
             return;
         }
 
-        Debug.LogWarning("userId " + _userId + "va: " + fireStateValue);
+        Debug.LogWarning("userId " + _userId + "va: " + fireStateValue + " dict: " + studentFireStateDict.Count);
 
         if (studentFireStateDict.TryGetValue(_userId, out var value))
         {
             studentFireStateDict[_userId] = fireStateValue;
+            Debug.LogWarning("AAA");
         }
 
         var allDone = true;
@@ -1125,14 +1125,21 @@ public class UserManager : MonoBehaviour
         // check whether all students are in the last fire state
         foreach (var student in studentFireStateDict)
         {
+            if (student.Key == playerHandler.UserId)
+            {
+                continue;
+            }
+
             if (student.Value != 2)
             {
                 allDone = false;
                 break;
             }
+
+            Debug.LogWarning("BB " + student.Value);
         }
 
-        if (allDone)
+        if (allDone && studentFireStateDict.Count > 0)
         {
             fireAccidentDone = true;
             fireHandler.DeactivateFire();
