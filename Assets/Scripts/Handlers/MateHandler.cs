@@ -26,6 +26,7 @@ public class MateHandler : ClientHandler
     public void Awake ()
     {
         lookTransform = transform;
+        hasStateChanged = false;
     }
 
     public void Update ()
@@ -36,13 +37,13 @@ public class MateHandler : ClientHandler
         }
 
         var deltaTime = Time.deltaTime;
-        var currentState = runtimeData.state;
 
         UpdatePosition(deltaTime);
 
-        if (currentState != runtimeData.state)
+        if (hasStateChanged)
         {
             ChangeAnimator(runtimeData.state);
+            hasStateChanged = false;
         }
     }
 
@@ -60,11 +61,12 @@ public class MateHandler : ClientHandler
             animator.SetInteger("stateValue", 2);
             break;
         }
+
+        gameObject.SetActive(true);
     }
 
     public override void InitializeClient ()
     {
-        ChangeAnimator(runtimeData.state);
         isClientInitialized = true;
     }
 
@@ -83,6 +85,23 @@ public class MateHandler : ClientHandler
         }
     }
 
+    public void SetInitAnimation ()
+    {
+        if (RuntimeData != null)
+        {
+            if (RuntimeData.state == ClientState.Walking.ToString())
+            {
+                gameObject.SetActive(false);
+                hasStateChanged = false;
+            }
+            else
+            {
+                gameObject.SetActive(true);
+                hasStateChanged = true;
+            }
+        }
+    }
+
     public void OnMateWaypointValueChanged (object sender, ValueChangedEventArgs args)
     {
         OnMateWaypointChanged?.Invoke(UserId, int.Parse(args.Snapshot.Value.ToString()));
@@ -90,14 +109,7 @@ public class MateHandler : ClientHandler
 
     public void OnMateStateValueChanged (object sender, ValueChangedEventArgs args)
     {
-        var currentState = runtimeData.state;
-
         runtimeData.state = args.Snapshot.Value.ToString();
-
-        if (currentState != runtimeData.state)
-        {
-            ChangeAnimator(runtimeData.state);
-        }
 
         //OnMateStateChanged?.Invoke(UserId, int.Parse(args.Snapshot.Value.ToString()));
     }

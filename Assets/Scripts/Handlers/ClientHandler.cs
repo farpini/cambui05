@@ -21,6 +21,7 @@ public abstract class ClientHandler : MonoBehaviour
     protected UserRuntimeData runtimeData;
 
     protected bool isClientInitialized = false;
+    protected bool hasStateChanged = false;
 
     protected Transform lookTransform;
 
@@ -63,13 +64,6 @@ public abstract class ClientHandler : MonoBehaviour
         transform.position = _position;
     }
 
-    public void SetInitAnimation ()
-    {
-
-
-
-    }
-
     public void SetRotation ()
     {
         lookTransform.rotation = Quaternion.Euler(currentWaypoint.WaypointEnterDirection);
@@ -101,11 +95,13 @@ public abstract class ClientHandler : MonoBehaviour
         {
             // set state to moving
             runtimeData.state = ClientState.Walking.ToString();
+            hasStateChanged = true;
         }
         else
         {
             runtimeData.state = waypointHandler.WaypointType == WaypointType.Floor ? ClientState.Idle.ToString() :
                 ClientState.Sit.ToString();
+            hasStateChanged = true;
         }
 
         //FirebaseManager.instance.SetUserRuntimeAttribute(UserId, UserRuntimeAttribute.state, runtimeData.state);
@@ -150,6 +146,7 @@ public abstract class ClientHandler : MonoBehaviour
             if (runtimeData.state != ClientState.Walking.ToString())
             {
                 runtimeData.state = ClientState.Walking.ToString();
+                hasStateChanged = true;
             }
 
             transform.position = newPosition;
@@ -169,6 +166,7 @@ public abstract class ClientHandler : MonoBehaviour
         {
             //animator.SetInteger("stateValue", 2);
             runtimeData.state = ClientState.Sit.ToString();
+            hasStateChanged = true;
 
             if (this is MateHandler)
             {
@@ -183,6 +181,7 @@ public abstract class ClientHandler : MonoBehaviour
 
             Debug.LogWarning("B1");
             runtimeData.state = ClientState.Idle.ToString();
+            hasStateChanged = true;
             //FirebaseManager.instance.SetUserRuntimeAttribute(UserId, UserRuntimeAttribute.state, runtimeData.state);
 
             if (this is MateHandler)
@@ -198,6 +197,9 @@ public abstract class ClientHandler : MonoBehaviour
         else if (currentWaypoint.WaypointType == WaypointType.Door)
         {
             Debug.Log("Porta");
+
+            runtimeData.state = ClientState.Idle.ToString();
+            hasStateChanged = true;
 
             runtimeData.roomId = currentWaypoint.GetComponent<DoorHandler>().roomIndex.ToString();
             //UserManager.instance.roomId = int.Parse(runtimeData.roomId);
