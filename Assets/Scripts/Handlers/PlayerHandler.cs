@@ -24,12 +24,14 @@ public class PlayerHandler : ClientHandler
             return;
         }
 
+        var deltaTime = Time.deltaTime;
+
         var currentState = runtimeData.state;
         var currentRoomId = runtimeData.roomId;
 
         CheckButtonClick();
         //CheckMovement();
-        UpdatePosition();
+        UpdatePosition(deltaTime);
 
         if (currentState != runtimeData.state)
         {

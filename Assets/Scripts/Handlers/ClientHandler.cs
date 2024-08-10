@@ -11,7 +11,7 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 public abstract class ClientHandler : MonoBehaviour
 {
-    protected static float movementSpeed = 0.02f;
+    protected static float movementSpeed = 2f;
 
     protected WaypointHandler currentWaypoint;
     protected ObjectHandler currentObject;
@@ -114,7 +114,7 @@ public abstract class ClientHandler : MonoBehaviour
         SetCamera(true);
     }
 
-    protected void UpdatePosition ()
+    protected void UpdatePosition (float deltaTime)
     {
         if (currentWaypoint == null)
         {
@@ -123,7 +123,7 @@ public abstract class ClientHandler : MonoBehaviour
 
         var currentPosition = transform.position;
         var targetPosition = currentWaypoint.transform.position;
-        var newPosition = Vector3.MoveTowards(currentPosition, targetPosition, movementSpeed);
+        var newPosition = Vector3.MoveTowards(currentPosition, targetPosition, movementSpeed * deltaTime);
 
         if (IsCloseEnoughToTarget(newPosition, targetPosition))
         {

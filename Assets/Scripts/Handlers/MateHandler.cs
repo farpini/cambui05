@@ -35,9 +35,10 @@ public class MateHandler : ClientHandler
             return;
         }
 
+        var deltaTime = Time.deltaTime;
         var currentState = runtimeData.state;
 
-        UpdatePosition();
+        UpdatePosition(deltaTime);
 
         if (currentState != runtimeData.state)
         {
