@@ -99,8 +99,8 @@ public abstract class ClientHandler : MonoBehaviour
         }
         else
         {
-            runtimeData.state = waypointHandler.WaypointType == WaypointType.Floor ? ClientState.Idle.ToString() :
-                ClientState.Sit.ToString();
+            runtimeData.state = waypointHandler.WaypointType == WaypointType.Desk ? ClientState.Sit.ToString() :
+                ClientState.Idle.ToString();
             hasStateChanged = true;
         }
 
