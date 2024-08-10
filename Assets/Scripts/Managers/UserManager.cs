@@ -848,6 +848,9 @@ public class UserManager : MonoBehaviour
                 RegisterUserRuntimeAttributeChangeValueEvent(userId, UserRuntimeAttribute.waypoint,
                 mateHandler.OnMateWaypointValueChanged);
             FirebaseManager.instance.
+                RegisterUserRuntimeAttributeChangeValueEvent(userId, UserRuntimeAttribute.state,
+                mateHandler.OnMateStateValueChanged);
+            FirebaseManager.instance.
                 RegisterWorldStateChangeValueEvent(OnWorldStateChanged);
             FirebaseManager.instance.
                 RegisterWorldStateArgChangeValueEvent(OnWorldStateArgChanged);

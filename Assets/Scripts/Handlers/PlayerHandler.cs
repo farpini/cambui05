@@ -24,9 +24,22 @@ public class PlayerHandler : ClientHandler
             return;
         }
 
+        var currentState = runtimeData.state;
+        var currentRoomId = runtimeData.roomId;
+
         CheckButtonClick();
         CheckMovement();
         UpdatePosition();
+
+        if (currentState != runtimeData.state)
+        {
+            FirebaseManager.instance.SetUserRuntimeAttribute(UserId, UserRuntimeAttribute.state, runtimeData.state);
+        }
+
+        if (currentRoomId != runtimeData.roomId)
+        {
+            FirebaseManager.instance.SetUserRuntimeAttribute(UserId, UserRuntimeAttribute.roomId, runtimeData.roomId);
+        }
     }
 
     public override void SetCamera (bool isStand, bool initRotation = false)

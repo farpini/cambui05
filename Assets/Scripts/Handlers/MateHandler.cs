@@ -19,6 +19,7 @@ public class MateHandler : ClientHandler
     public TextMeshPro usernameLabel;
 
     public Action<string, int> OnMateWaypointChanged;
+    public Action<string, int> OnMateStateChanged;
     public Action<string, int> OnMateFireStateChanged;
 
 
@@ -34,11 +35,17 @@ public class MateHandler : ClientHandler
             return;
         }
 
+        var currentState = runtimeData.state;
+
         UpdatePosition();
-        ChangeAnimator();
+
+        if (currentState != runtimeData.state)
+        {
+            ChangeAnimator(runtimeData.state);
+        }
     }
 
-    private void ChangeAnimator ()
+    private void ChangeAnimator (string state)
     {
         switch (runtimeData.state)
         {
@@ -52,6 +59,12 @@ public class MateHandler : ClientHandler
             animator.SetInteger("stateValue", 2);
             break;
         }
+    }
+
+    public override void InitializeClient ()
+    {
+        ChangeAnimator(runtimeData.state);
+        isClientInitialized = true;
     }
 
     public void ChangeModel ()
@@ -72,6 +85,20 @@ public class MateHandler : ClientHandler
     public void OnMateWaypointValueChanged (object sender, ValueChangedEventArgs args)
     {
         OnMateWaypointChanged?.Invoke(UserId, int.Parse(args.Snapshot.Value.ToString()));
+    }
+
+    public void OnMateStateValueChanged (object sender, ValueChangedEventArgs args)
+    {
+        var currentState = runtimeData.state;
+
+        runtimeData.state = args.Snapshot.Value.ToString();
+
+        if (currentState != runtimeData.state)
+        {
+            ChangeAnimator(runtimeData.state);
+        }
+
+        //OnMateStateChanged?.Invoke(UserId, int.Parse(args.Snapshot.Value.ToString()));
     }
 
     public void OnMateFireStateValueChanged (object sender, ValueChangedEventArgs args)

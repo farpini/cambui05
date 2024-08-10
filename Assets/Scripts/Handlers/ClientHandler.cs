@@ -108,7 +108,7 @@ public abstract class ClientHandler : MonoBehaviour
                 ClientState.Sit.ToString();
         }
 
-        FirebaseManager.instance.SetUserRuntimeAttribute(UserId, UserRuntimeAttribute.state, runtimeData.state);
+        //FirebaseManager.instance.SetUserRuntimeAttribute(UserId, UserRuntimeAttribute.state, runtimeData.state);
 
         // always stand-up when a new waypoint is set
         SetCamera(true);
@@ -124,8 +124,6 @@ public abstract class ClientHandler : MonoBehaviour
         var currentPosition = transform.position;
         var targetPosition = currentWaypoint.transform.position;
         var newPosition = Vector3.MoveTowards(currentPosition, targetPosition, movementSpeed);
-
-        var currentState = runtimeData.state;
 
         if (IsCloseEnoughToTarget(newPosition, targetPosition))
         {
@@ -155,11 +153,6 @@ public abstract class ClientHandler : MonoBehaviour
             }
 
             transform.position = newPosition;
-        }
-
-        if (currentState != runtimeData.state)
-        {
-            FirebaseManager.instance.SetUserRuntimeAttribute(UserId, UserRuntimeAttribute.state, runtimeData.state);
         }
     }
 
@@ -205,18 +198,12 @@ public abstract class ClientHandler : MonoBehaviour
         else if (currentWaypoint.WaypointType == WaypointType.Door)
         {
             Debug.Log("Porta");
-            var currentRoomIdx = runtimeData.roomId;
 
-            if (currentRoomIdx != currentWaypoint.GetComponent<DoorHandler>().roomIndex.ToString())
-            {
-                FirebaseManager.instance.SetUserRuntimeAttribute(userId, UserRuntimeAttribute.roomId, currentWaypoint.GetComponent<DoorHandler>().roomIndex.ToString());
-            }
-
+            runtimeData.roomId = currentWaypoint.GetComponent<DoorHandler>().roomIndex.ToString();
             //UserManager.instance.roomId = int.Parse(runtimeData.roomId);
             OnRoomChange?.Invoke(currentWaypoint.GetComponent<DoorHandler>().roomIndex);
             //UserManager.instance.LoadWaypointHandlers();
         }
-
 
         OnClientWaypointReached?.Invoke(this, currentWaypoint);
     }
