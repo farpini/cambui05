@@ -2,6 +2,7 @@ using Firebase.Database;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using Unity.Mathematics;
 using UnityEngine;
 
 
@@ -132,7 +133,7 @@ public enum ClientStatus
 
 public enum WorldState
 {
-    WaitingOnClassRoom, ClassStarted, WaitingOnPracticeRoom, PracticeStarted, FireAccident, QuizStarted, QuizFinished
+    WaitingOnClassRoom = 0, ClassStarted = 1, WaitingOnPracticeRoom = 2, PracticeStarted = 3, FireAccident = 4, QuizStarted = 5, QuizFinished = 6
 }
 
 // WaitingOnClassRoom
@@ -171,4 +172,71 @@ public class WorldSettings
 {
     public float characterSpeed;
     public int[] quizAnswerKeys;
+}
+
+public static class ProfessorInstructionsData
+{
+    public static Dictionary<int2, string> instructionsDict;
+
+    public static void Initialize (int classSlidesCount)
+    {
+        instructionsDict = new();
+
+        instructionsDict.Add(new int2((int)WorldState.WaitingOnClassRoom, 0),
+            "Aguardando alunos entrarem na sala de aula. Quando pronto, clique Play para iniciar a aula.");
+
+        for (int i = 0; i < classSlidesCount; i++)
+        {
+            instructionsDict.Add(new int2((int)WorldState.ClassStarted, i),
+                "Slide: " + (i + 1).ToString() + " de " + classSlidesCount.ToString() + 
+                "\nAvançar slide: botão da direita.\nRetornar slide: botão da esquerda" +
+                ((i == classSlidesCount - 1) ? "\nEncerrar aula: botão play" : ""));
+        }
+
+        instructionsDict.Add(new int2((int)WorldState.WaitingOnPracticeRoom, 0),
+            "Aguardando alunos entrarem na sala prática. Quando pronto, clique Play para iniciar a aula.");
+
+        instructionsDict.Add(new int2((int)WorldState.PracticeStarted, 0),
+            "Instrua os alunos a manusear os EPIs das suas bancadas.\nPara iniciar acidente de trabalho (incêndio), clique Play.");
+
+        instructionsDict.Add(new int2((int)WorldState.FireAccident, 0),
+            "Aguarde com que cada aluno apague uma parte do fogo até ele ser extinto por completo.\nCaso um aluno não conseguir usar o extintor, você deve apagá-lo.\n" +
+            "Quando o fogo for extinto, clique Play para começar a etapa do quiz.");
+        instructionsDict.Add(new int2((int)WorldState.FireAccident, 1),
+            "Aguarde com que cada aluno apague uma parte do fogo até ele ser extinto por completo.\nCaso um aluno não conseguir usar o extintor, você deve apagá-lo.\n" +
+            "Quando o fogo for extinto, clique Play para começar a etapa do quiz.");
+        instructionsDict.Add(new int2((int)WorldState.FireAccident, 2),
+            "Aguarde com que cada aluno apague uma parte do fogo até ele ser extinto por completo.\nCaso um aluno não conseguir usar o extintor, você deve apagá-lo.\n" +
+            "Quando o fogo for extinto, clique Play para começar a etapa do quiz.");
+
+        instructionsDict.Add(new int2((int)WorldState.QuizStarted, 0),
+           "Instrua os alunos a trazerem os EPIs referentes às perguntas do quiz, das suas bancadas até a bancada central." +
+           "\nPara iniciar as perguntas do quiz, clique botão da esquerda.");
+        instructionsDict.Add(new int2((int)WorldState.QuizStarted, 1),
+           "Estipule um tempo para que os alunos tragam o EPI até a bancada central como forma de resposta a pergunta do quiz." +
+           "\nQuando achar apropriado, clique botão esquerda para a próxima pergunta.");
+        instructionsDict.Add(new int2((int)WorldState.QuizStarted, 2),
+           "Estipule um tempo para que os alunos tragam o EPI até a bancada central como forma de resposta a pergunta do quiz." +
+           "\nQuando achar apropriado, clique botão da esquerda para a próxima pergunta.");
+        instructionsDict.Add(new int2((int)WorldState.QuizStarted, 3),
+           "Estipule um tempo para que os alunos tragam o EPI até a bancada central como forma de resposta a pergunta do quiz." +
+           "\nQuando achar apropriado, clique botão da esquerda para a próxima pergunta.");
+        instructionsDict.Add(new int2((int)WorldState.QuizStarted, 4),
+           "Fim do quiz.");
+
+        instructionsDict.Add(new int2((int)WorldState.QuizFinished, 0),
+           "Fim do quiz e encerramento das aulas. Os resultados do quiz estão no quadro.");
+    }
+
+    public static string GetInstructionText (WorldState state, int stateArg)
+    {
+        var dictKey = new int2((int)state, stateArg);
+
+        if (instructionsDict.TryGetValue(dictKey, out var dictValue))
+        {
+            return dictValue;
+        }
+
+        return "Sem instruções";
+    }
 }

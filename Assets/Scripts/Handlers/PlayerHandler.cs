@@ -28,7 +28,7 @@ public class PlayerHandler : ClientHandler
         var currentRoomId = runtimeData.roomId;
 
         CheckButtonClick();
-        CheckMovement();
+        //CheckMovement();
         UpdatePosition();
 
         if (currentState != runtimeData.state)
@@ -73,7 +73,7 @@ public class PlayerHandler : ClientHandler
 
     private void CheckButtonClick()
     {
-        if(registerData.tipo != "professor")
+        if (registerData.tipo != "professor")
         {
             return;
         }
@@ -96,6 +96,7 @@ public class PlayerHandler : ClientHandler
         }
     }
 
+    /*
     private void CheckMovement ()
     {
         if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
@@ -142,4 +143,5 @@ public class PlayerHandler : ClientHandler
             Camera.main.gameObject.transform.eulerAngles = cameraRotation;
         }
     }
+    */
 }

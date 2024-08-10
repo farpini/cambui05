@@ -30,6 +30,9 @@ public class UserManager : MonoBehaviour
     public FireHandler fireHandler;
     public ExtinguisherHandler extinguisherHandler;
 
+    public TMP_Text canvasClassRoomText;
+    public TMP_Text canvasPracticeRoomText;
+
     public List<ButtonHandler> buttons;
 
     public List<GameObject> floorWaypointHolder;
@@ -94,6 +97,8 @@ public class UserManager : MonoBehaviour
         fireAccidentDone = false;
 
         WorldStateDict = new();
+
+        ProfessorInstructionsData.Initialize(classImages.Count);
 
         FirebaseManager.instance.OnFirebaseInitialized += OnFirebaseInitialized;
         FirebaseManager.instance.OnLoginSuccess += OnLogin;
@@ -374,6 +379,8 @@ public class UserManager : MonoBehaviour
             }
         }
 
+        UpdateProfessorInstructionText();
+
         //currentUsersConnectedCount = usersDictionary.Count;
 
         //FirebaseManager.instance.SetUsersConnectedCount(currentUsersConnectedCount);
@@ -469,11 +476,15 @@ public class UserManager : MonoBehaviour
     {
         if (userRegisterData.IsProfessor)
         {
+            canvasClassRoomText.gameObject.SetActive(true);
+            canvasPracticeRoomText.gameObject.SetActive(false);
             FirebaseManager.instance.SetWorldState(WorldState.WaitingOnClassRoom);
             FirebaseManager.instance.SetWorldStateArg(0);
         }
         else
         {
+            canvasClassRoomText.gameObject.SetActive(false);
+            canvasPracticeRoomText.gameObject.SetActive(false);
             studentQuizData.Add(playerHandler.UserId, new StudentQuizData { epiIds = new string[WorldSettings.quizAnswerKeys.Length] });
             FirebaseManager.instance.RegisterQuizResultTextChangeValueEvent(OnQuizResultTextChanged);
         }
@@ -501,6 +512,10 @@ public class UserManager : MonoBehaviour
         {
             fireHandler.ActivateFire();
         }
+        else
+        {
+            fireHandler.DeactivateFire();
+        }
         PrintWorldStateMessage();
     }
 
@@ -519,6 +534,18 @@ public class UserManager : MonoBehaviour
         else
         {
             PrintWorldStateMessage();
+        }
+
+        UpdateProfessorInstructionText();
+    }
+
+    private void UpdateProfessorInstructionText ()
+    {
+        if (playerHandler != null && playerHandler.RegisterData != null && playerHandler.RegisterData.IsProfessor)
+        {
+            string instructionText = ProfessorInstructionsData.GetInstructionText(CurrentWorldState, CurrentWorldStateArg);
+            canvasClassRoomText.text = instructionText;
+            canvasPracticeRoomText.text = instructionText;
         }
     }
 
@@ -636,6 +663,8 @@ public class UserManager : MonoBehaviour
             return;
         }
 
+        canvasClassRoomText.gameObject.SetActive(false);
+        canvasPracticeRoomText.gameObject.SetActive(true);
         classImagesIndex = 0;
         FirebaseManager.instance.SetWorldState(WorldState.WaitingOnPracticeRoom);
         SetWorldState(WorldState.WaitingOnPracticeRoom);
@@ -802,6 +831,12 @@ public class UserManager : MonoBehaviour
         // check if mates are already sit in a desk waypoint
         if (waypointHandler.WaypointType == WaypointType.Desk)
         {
+            // professor cannot sit on desks
+            //if (playerHandler.RegisterData.IsProfessor)
+            //{
+            //    return;
+            //}
+
             for (int i = 0; i < mateHandlers.Count; i++)
             {
                 if (mateHandlers[i].CurrentWaypoint == waypointHandler)
@@ -1144,11 +1179,20 @@ public class UserManager : MonoBehaviour
 
         if (allDone && studentFireStateDict.Count > 0)
         {
-            fireAccidentDone = true;
-            fireHandler.DeactivateFire();
-            PrintWorldStateMessageDirectly(new StateData { 
-                stateMsg = "Todos alunos apagaram o fogo. Prossiga a aula", stateMsgDuration = 0, stateMsgToShow = true });
+            OnProfessorFireExtinguishedDone();
         }
+    }
+
+    private void OnProfessorFireExtinguishedDone ()
+    {
+        fireAccidentDone = true;
+        fireHandler.DeactivateFire();
+        PrintWorldStateMessageDirectly(new StateData
+        {
+            stateMsg = "Todos alunos apagaram o fogo. Prossiga a aula",
+            stateMsgDuration = 0,
+            stateMsgToShow = true
+        });
     }
 
     private void OnPlayerFireStateChanged (int _fireStateValue)
@@ -1178,6 +1222,13 @@ public class UserManager : MonoBehaviour
             else
             {
                 Debug.LogWarning("Not present in dict.");
+            }
+        }
+        else
+        {
+            if (_fireStateValue == 2)
+            {
+                OnProfessorFireExtinguishedDone();
             }
         }
     }
