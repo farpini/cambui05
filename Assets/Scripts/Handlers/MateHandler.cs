@@ -44,7 +44,7 @@ public class MateHandler : ClientHandler
         //ChangeAnimator(runtimeData.state);
     }
 
-    private void ChangeAnimator (string state)
+    private void ChangeAnimator ()
     {
         switch (runtimeData.state)
         {
@@ -85,7 +85,7 @@ public class MateHandler : ClientHandler
         if (RuntimeData != null)
         {
             currentWaypoint = initWaypoint;
-            ChangeAnimator(runtimeData.state);
+            ChangeAnimator();
             UpdateMateDirection();
         }
     }
@@ -98,7 +98,7 @@ public class MateHandler : ClientHandler
     public void OnMateStateValueChanged (object sender, ValueChangedEventArgs args)
     {
         runtimeData.state = args.Snapshot.Value.ToString();
-        ChangeAnimator(runtimeData.state);
+        ChangeAnimator();
         UpdateMateDirection();
 
         //OnMateStateChanged?.Invoke(UserId, int.Parse(args.Snapshot.Value.ToString()));
@@ -178,5 +178,11 @@ public class MateHandler : ClientHandler
             }
             SetCamera(true);
         }
+    }
+
+    public void UpdateFirstTime ()
+    {
+        ChangeAnimator();
+        UpdateMateDirection();
     }
 }
