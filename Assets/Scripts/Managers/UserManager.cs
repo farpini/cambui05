@@ -68,6 +68,8 @@ public class UserManager : MonoBehaviour
     private bool checkingClientLogged = false;
     private bool hasClientLogged = false;
 
+    private bool firstUpdate = false;
+
     private bool fireAccidentDone;
 
     public Action<WorldState, StateData> OnWorldStateDataChanged;
@@ -364,9 +366,18 @@ public class UserManager : MonoBehaviour
             if (clientUserId != playerHandler.UserId)
             {
                 // only create a mate if it does not exist
-                if (GetMateHandler(clientUserId) == null)
+                var mateHandler = GetMateHandler(clientUserId);
+                if (mateHandler == null)
                 {
                     CreateMateHandler(clientUserId, client.Value);
+                }
+                else
+                {
+                    if (!firstUpdate)
+                    {
+                        mateHandler.UpdateFirstTime();
+                        firstUpdate = true;
+                    }
                 }
             }
             else
