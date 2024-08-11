@@ -27,6 +27,7 @@ public class MateHandler : ClientHandler
     {
         lookTransform = transform;
         hasStateChanged = false;
+        //ShowModel(false);
     }
 
     public void Update ()
@@ -40,11 +41,7 @@ public class MateHandler : ClientHandler
 
         UpdatePosition(deltaTime);
 
-        if (hasStateChanged)
-        {
-            ChangeAnimator(runtimeData.state);
-            hasStateChanged = false;
-        }
+        //ChangeAnimator(runtimeData.state);
     }
 
     private void ChangeAnimator (string state)
@@ -61,8 +58,6 @@ public class MateHandler : ClientHandler
             animator.SetInteger("stateValue", 2);
             break;
         }
-
-        gameObject.SetActive(true);
     }
 
     public override void InitializeClient ()
@@ -85,20 +80,13 @@ public class MateHandler : ClientHandler
         }
     }
 
-    public void SetInitAnimation ()
+    public void SetInitAnimation (WaypointHandler initWaypoint)
     {
         if (RuntimeData != null)
         {
-            if (RuntimeData.state == ClientState.Walking.ToString())
-            {
-                gameObject.SetActive(false);
-                hasStateChanged = false;
-            }
-            else
-            {
-                gameObject.SetActive(true);
-                hasStateChanged = true;
-            }
+            currentWaypoint = initWaypoint;
+            ChangeAnimator(runtimeData.state);
+            UpdateMateDirection();
         }
     }
 
@@ -110,6 +98,8 @@ public class MateHandler : ClientHandler
     public void OnMateStateValueChanged (object sender, ValueChangedEventArgs args)
     {
         runtimeData.state = args.Snapshot.Value.ToString();
+        ChangeAnimator(runtimeData.state);
+        UpdateMateDirection();
 
         //OnMateStateChanged?.Invoke(UserId, int.Parse(args.Snapshot.Value.ToString()));
     }
@@ -161,5 +151,32 @@ public class MateHandler : ClientHandler
     public override void ShowModel (bool _toShow)
     {
         charRenderer.SetActive(_toShow);
+    }
+
+    protected override void OnWaypointPositionReached ()
+    {
+        UpdateMateDirection();
+    }
+
+    private void UpdateMateDirection ()
+    {
+        if (currentWaypoint == null || runtimeData.state == ClientState.Walking.ToString())
+        {
+            return;
+        }
+
+        if (currentWaypoint.WaypointType == WaypointType.Desk)
+        {
+            transform.rotation = Quaternion.LookRotation(Vector3.forward);
+            SetCamera(false);
+        }
+        else if (currentWaypoint.WaypointType == WaypointType.Floor)
+        {
+            if (currentWaypoint.WaypointForceDirection)
+            {
+                transform.rotation = Quaternion.LookRotation(currentWaypoint.WaypointEnterDirection);
+            }
+            SetCamera(true);
+        }
     }
 }

@@ -93,15 +93,23 @@ public abstract class ClientHandler : MonoBehaviour
 
         if (!IsCloseEnoughToTarget(currentPosition, targetPosition))
         {
-            // set state to moving
-            runtimeData.state = ClientState.Walking.ToString();
-            hasStateChanged = true;
+            if (this is PlayerHandler)
+            {
+                // set state to moving
+                runtimeData.state = ClientState.Walking.ToString();
+                FirebaseManager.instance.SetUserRuntimeAttribute(UserId, UserRuntimeAttribute.state, runtimeData.state);
+                hasStateChanged = true;
+            }
         }
         else
         {
-            runtimeData.state = waypointHandler.WaypointType == WaypointType.Desk ? ClientState.Sit.ToString() :
-                ClientState.Idle.ToString();
-            hasStateChanged = true;
+            if (this is PlayerHandler)
+            {
+                runtimeData.state = waypointHandler.WaypointType == WaypointType.Desk ? ClientState.Sit.ToString() :
+                    ClientState.Idle.ToString();
+                FirebaseManager.instance.SetUserRuntimeAttribute(UserId, UserRuntimeAttribute.state, runtimeData.state);
+                hasStateChanged = true;
+            }
         }
 
         //FirebaseManager.instance.SetUserRuntimeAttribute(UserId, UserRuntimeAttribute.state, runtimeData.state);
@@ -143,10 +151,13 @@ public abstract class ClientHandler : MonoBehaviour
         }
         else
         {
-            if (runtimeData.state != ClientState.Walking.ToString())
+            if (this is PlayerHandler)
             {
-                runtimeData.state = ClientState.Walking.ToString();
-                hasStateChanged = true;
+                if (runtimeData.state != ClientState.Walking.ToString())
+                {
+                    runtimeData.state = ClientState.Walking.ToString();
+                    FirebaseManager.instance.SetUserRuntimeAttribute(UserId, UserRuntimeAttribute.state, runtimeData.state);
+                }
             }
 
             transform.position = newPosition;
@@ -158,56 +169,8 @@ public abstract class ClientHandler : MonoBehaviour
         return Vector3.Distance(currentPosition, targetPosition) < 0.1f;
     }
 
-    private void OnWaypointPositionReached ()
+    protected virtual void OnWaypointPositionReached ()
     {
-        var currentState = runtimeData.state;
-
-        if (currentWaypoint.WaypointType == WaypointType.Desk)
-        {
-            //animator.SetInteger("stateValue", 2);
-            runtimeData.state = ClientState.Sit.ToString();
-            hasStateChanged = true;
-
-            if (this is MateHandler)
-            {
-                transform.rotation = Quaternion.LookRotation(Vector3.forward);
-            }
-
-            SetCamera(false);
-        }
-        else if (currentWaypoint.WaypointType == WaypointType.Floor)
-        {
-            //animator.SetInteger("stateValue", 0);
-
-            Debug.LogWarning("B1");
-            runtimeData.state = ClientState.Idle.ToString();
-            hasStateChanged = true;
-            //FirebaseManager.instance.SetUserRuntimeAttribute(UserId, UserRuntimeAttribute.state, runtimeData.state);
-
-            if (this is MateHandler)
-            {
-                if (currentWaypoint.WaypointForceDirection)
-                {
-                    transform.rotation = Quaternion.LookRotation(currentWaypoint.WaypointEnterDirection);
-                }
-            }
-
-            SetCamera(true);
-        }
-        else if (currentWaypoint.WaypointType == WaypointType.Door)
-        {
-            Debug.Log("Porta");
-
-            runtimeData.state = ClientState.Idle.ToString();
-            hasStateChanged = true;
-
-            runtimeData.roomId = currentWaypoint.GetComponent<DoorHandler>().roomIndex.ToString();
-            //UserManager.instance.roomId = int.Parse(runtimeData.roomId);
-            OnRoomChange?.Invoke(currentWaypoint.GetComponent<DoorHandler>().roomIndex);
-            //UserManager.instance.LoadWaypointHandlers();
-        }
-
-        OnClientWaypointReached?.Invoke(this, currentWaypoint);
     }
 
     /*

@@ -876,7 +876,7 @@ public class UserManager : MonoBehaviour
             var waypointIdx = int.Parse(mateHandler.RuntimeData.waypoint);
             mateHandler.ChangeModel();
             mateHandler.SetPosition(waypoints[waypointIdx].transform.position);
-            mateHandler.SetInitAnimation();
+            mateHandler.SetInitAnimation(waypoints[waypointIdx]);
             mateHandler.OnMateWaypointChanged = OnClientWaypointChanged;
             mateHandler.InitializeClient();
             FirebaseManager.instance.

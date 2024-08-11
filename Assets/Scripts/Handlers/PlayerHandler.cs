@@ -30,7 +30,6 @@ public class PlayerHandler : ClientHandler
         var currentRoomId = runtimeData.roomId;
 
         CheckButtonClick();
-        //CheckMovement();
         UpdatePosition(deltaTime);
 
         if (currentState != runtimeData.state)
@@ -98,52 +97,25 @@ public class PlayerHandler : ClientHandler
         }
     }
 
-    /*
-    private void CheckMovement ()
+    protected override void OnWaypointPositionReached ()
     {
-        if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
+        var currentState = runtimeData.state;
+
+        if (currentWaypoint.WaypointType == WaypointType.Desk)
         {
-            var playerRotation = transform.eulerAngles;
-            var rotationValue = playerRotation.y;
-            rotationValue += Time.deltaTime * cameraSpeed;
-            playerRotation.y = rotationValue;
-            transform.eulerAngles = playerRotation;
+            runtimeData.state = ClientState.Sit.ToString();
+            SetCamera(false);
         }
-        else if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
+        else if (currentWaypoint.WaypointType == WaypointType.Floor)
         {
-            var playerRotation = transform.eulerAngles;
-            var rotationValue = playerRotation.y;
-            rotationValue -= Time.deltaTime * cameraSpeed;
-            playerRotation.y = rotationValue;
-            transform.eulerAngles = playerRotation;
+            runtimeData.state = ClientState.Idle.ToString();
+            SetCamera(true);
+        }
+        else if (currentWaypoint.WaypointType == WaypointType.Door)
+        {
+            runtimeData.state = ClientState.Idle.ToString();
         }
 
-        var verticalRotationForNegative = 360f - cameraVerticalRotationMax;
-
-        if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
-        {
-            var cameraRotation = Camera.main.gameObject.transform.eulerAngles;
-            var cameraRotationX = cameraRotation.x;
-            cameraRotationX -= Time.deltaTime * cameraSpeed;
-            if (cameraRotationX > cameraVerticalRotationMax && cameraRotationX < verticalRotationForNegative)
-            {
-                cameraRotationX = cameraRotationX > cameraVerticalRotationMax ? verticalRotationForNegative : cameraVerticalRotationMax;
-            }
-            cameraRotation.x = cameraRotationX;
-            Camera.main.gameObject.transform.eulerAngles = cameraRotation;
-        }
-        else if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S))
-        {
-            var cameraRotation = Camera.main.gameObject.transform.eulerAngles;
-            var cameraRotationX = cameraRotation.x;
-            cameraRotationX += Time.deltaTime * cameraSpeed;
-            if (cameraRotationX > cameraVerticalRotationMax && cameraRotationX < verticalRotationForNegative)
-            {
-                cameraRotationX = cameraRotationX > cameraVerticalRotationMax ? cameraVerticalRotationMax : verticalRotationForNegative;
-            }
-            cameraRotation.x = cameraRotationX;
-            Camera.main.gameObject.transform.eulerAngles = cameraRotation;
-        }
+        OnClientWaypointReached?.Invoke(this, currentWaypoint);
     }
-    */
 }
