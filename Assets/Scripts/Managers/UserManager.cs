@@ -60,13 +60,15 @@ public class UserManager : MonoBehaviour
 
     //private int currentUsersConnectedCount = 0;
     private bool isPlayerLogged = false;
-    
+
 
     private bool registeredToWaypointChanged = false;
     private bool registeredToLoggedFlagChanged = false;
 
     private bool checkingClientLogged = false;
     private bool hasClientLogged = false;
+
+    private bool firstUpdate = false;
 
     private bool fireAccidentDone;
 
@@ -104,7 +106,7 @@ public class UserManager : MonoBehaviour
         FirebaseManager.instance.OnLoginSuccess += OnLogin;
     }
 
-    private void Start ()
+    private void Start()
     {
         SetXRButton();
         LoadWaypointHandlers();
@@ -140,20 +142,20 @@ public class UserManager : MonoBehaviour
         }
     }
 
-    private void InitializeExtinguisher ()
+    private void InitializeExtinguisher()
     {
         //fireHandler.ActivateFire();
         extinguisherHandler.Initialize();
         //extinguisherHandler.OnFireExtinguisherStateChanged += OnFireExtinguished;
     }
 
-    private void OnFirebaseInitialized ()
+    private void OnFirebaseInitialized()
     {
         StartCoroutine(FirebaseManager.instance.GetWorldSettingsData(OnWorldSettingsRead));
         FirebaseManager.instance.OnFirebaseInitialized -= OnFirebaseInitialized;
     }
 
-    private void OnWorldSettingsRead (WorldSettings worldSettings)
+    private void OnWorldSettingsRead(WorldSettings worldSettings)
     {
         WorldSettings = worldSettings;
         CreatePlayerHandler();
@@ -172,7 +174,7 @@ public class UserManager : MonoBehaviour
     {
         foreach (var button in buttons)
         {
-            if (!playerHandler.RegisterData.IsProfessor || !button.waypointProfessorAccess) button.gameObject.SetActive(false); 
+            if (!playerHandler.RegisterData.IsProfessor || !button.waypointProfessorAccess) button.gameObject.SetActive(false);
         }
     }
 
@@ -311,7 +313,7 @@ public class UserManager : MonoBehaviour
         StartCoroutine(FirebaseManager.instance.GetAllWorldStateData(OnWorldSettingLoaded));
     }
 
-    private void OnWorldSettingLoaded (Dictionary<string, StateData[]> _worldStateData)
+    private void OnWorldSettingLoaded(Dictionary<string, StateData[]> _worldStateData)
     {
         foreach (var door in doorWaypointHolder)
         {
@@ -364,9 +366,18 @@ public class UserManager : MonoBehaviour
             if (clientUserId != playerHandler.UserId)
             {
                 // only create a mate if it does not exist
-                if (GetMateHandler(clientUserId) == null)
+                var mateHandler = GetMateHandler(clientUserId);
+                if (mateHandler == null)
                 {
                     CreateMateHandler(clientUserId, client.Value);
+                }
+                else
+                {
+                    if (!firstUpdate)
+                    {
+                        mateHandler.UpdateFirstTime();
+                        firstUpdate = true;
+                    }
                 }
             }
             else
@@ -388,7 +399,7 @@ public class UserManager : MonoBehaviour
         //StartCoroutine(StartTrackingMateLogins());
     }
 
-    private void OnWorldStateDataRead (Dictionary<string, StateData[]> _worldStateData)
+    private void OnWorldStateDataRead(Dictionary<string, StateData[]> _worldStateData)
     {
         if (_worldStateData != null)
         {
@@ -496,7 +507,7 @@ public class UserManager : MonoBehaviour
         FirebaseManager.instance.
             RegisterUserRuntimeAttributeChangeValueEvent(userId, UserRuntimeAttribute.message,
             playerHandler.OnClientMessageValueChanged);
-        
+
         UpdateButton();
     }
 
@@ -539,7 +550,7 @@ public class UserManager : MonoBehaviour
         UpdateProfessorInstructionText();
     }
 
-    private void UpdateProfessorInstructionText ()
+    private void UpdateProfessorInstructionText()
     {
         if (playerHandler != null && playerHandler.RegisterData != null && playerHandler.RegisterData.IsProfessor)
         {
@@ -556,14 +567,14 @@ public class UserManager : MonoBehaviour
             switch (type)
             {
                 case ButtonType.Next:
-                break;
+                    break;
                 case ButtonType.Start:
-                ProfessorStartClass();
-                break;
+                    ProfessorStartClass();
+                    break;
                 case ButtonType.Previous:
-                break;
+                    break;
                 default:
-                break;
+                    break;
             }
         }
         else if (CurrentWorldState == WorldState.ClassStarted && classId == 0)
@@ -571,16 +582,16 @@ public class UserManager : MonoBehaviour
             switch (type)
             {
                 case ButtonType.Next:
-                ProfessorNextClassScreenClick();
-                break;
+                    ProfessorNextClassScreenClick();
+                    break;
                 case ButtonType.Start:
-                ProfessorEndClass();
-                break;
+                    ProfessorEndClass();
+                    break;
                 case ButtonType.Previous:
-                ProfessorPreviousClassScreenClick();
-                break;
+                    ProfessorPreviousClassScreenClick();
+                    break;
                 default:
-                break;
+                    break;
             }
         }
         else if (CurrentWorldState == WorldState.WaitingOnPracticeRoom && classId == 1)
@@ -588,14 +599,14 @@ public class UserManager : MonoBehaviour
             switch (type)
             {
                 case ButtonType.Next:
-                break;
+                    break;
                 case ButtonType.Start:
-                ProfessorStartPractice();
-                break;
+                    ProfessorStartPractice();
+                    break;
                 case ButtonType.Previous:
-                break;
+                    break;
                 default:
-                break;
+                    break;
             }
         }
         else if (CurrentWorldState == WorldState.PracticeStarted && classId == 1)
@@ -603,14 +614,14 @@ public class UserManager : MonoBehaviour
             switch (type)
             {
                 case ButtonType.Next:
-                break;
+                    break;
                 case ButtonType.Start:
-                ProfessorStartFireAccident();
-                break;
+                    ProfessorStartFireAccident();
+                    break;
                 case ButtonType.Previous:
-                break;
+                    break;
                 default:
-                break;
+                    break;
             }
         }
         else if (CurrentWorldState == WorldState.FireAccident && classId == 1 && fireAccidentDone)
@@ -619,10 +630,10 @@ public class UserManager : MonoBehaviour
             {
                 case ButtonType.Next:
                 case ButtonType.Start:
-                ProfessorStartQuiz();
-                break;
+                    ProfessorStartQuiz();
+                    break;
                 default:
-                break;
+                    break;
             }
         }
         else if (CurrentWorldState == WorldState.QuizStarted && classId == 1)
@@ -630,14 +641,14 @@ public class UserManager : MonoBehaviour
             switch (type)
             {
                 case ButtonType.Next:
-                ProfessorQuizQuestionClicked();
-                break;
+                    ProfessorQuizQuestionClicked();
+                    break;
                 case ButtonType.Start:
-                break;
+                    break;
                 case ButtonType.Previous:
-                break;
+                    break;
                 default:
-                break;
+                    break;
             }
         }
     }
@@ -649,14 +660,14 @@ public class UserManager : MonoBehaviour
         SetWorldStateArg(0);
     }
 
-    private void ProfessorStartPractice ()
+    private void ProfessorStartPractice()
     {
         FirebaseManager.instance.SetWorldState(WorldState.PracticeStarted);
         SetWorldState(WorldState.PracticeStarted);
         SetWorldStateArg(0);
     }
 
-    private void ProfessorEndClass ()
+    private void ProfessorEndClass()
     {
         if (classImagesIndex != (classImages.Count - 1))
         {
@@ -683,7 +694,7 @@ public class UserManager : MonoBehaviour
 
     private void ProfessorPreviousClassScreenClick()
     {
-        if (classImagesIndex > 0) 
+        if (classImagesIndex > 0)
         {
             classImagesIndex--;
             FirebaseManager.instance.SetWorldStateArg(classImagesIndex);
@@ -691,7 +702,7 @@ public class UserManager : MonoBehaviour
         }
     }
 
-    private void ProfessorStartFireAccident ()
+    private void ProfessorStartFireAccident()
     {
         FirebaseManager.instance.SetWorldState(WorldState.FireAccident);
         SetWorldState(WorldState.FireAccident);
@@ -699,7 +710,7 @@ public class UserManager : MonoBehaviour
         SetWorldStateArg(0);
     }
 
-    private void ProfessorStartQuiz ()
+    private void ProfessorStartQuiz()
     {
         ClearAllStudentEpiId();
 
@@ -711,7 +722,7 @@ public class UserManager : MonoBehaviour
         SetWorldStateArg(0);
     }
 
-    private void ProfessorQuizQuestionClicked ()
+    private void ProfessorQuizQuestionClicked()
     {
         CurrentWorldStateArg++;
         FirebaseManager.instance.SetWorldStateArg(CurrentWorldStateArg);
@@ -727,7 +738,7 @@ public class UserManager : MonoBehaviour
         //ClearAllStudentEpiId();
     }
 
-    private void OnAllUsersRuntimeDataReadForQuiz (Dictionary<string, UserRuntimeData> usersDictionary)
+    private void OnAllUsersRuntimeDataReadForQuiz(Dictionary<string, UserRuntimeData> usersDictionary)
     {
         foreach (var userData in usersDictionary)
         {
@@ -752,13 +763,13 @@ public class UserManager : MonoBehaviour
         ClearAllStudentEpiId();
     }
 
-    private void ProfessorEndQuiz ()
+    private void ProfessorEndQuiz()
     {
         FirebaseManager.instance.SetWorldState(WorldState.QuizFinished);
         SetWorldState(WorldState.QuizFinished);
     }
 
-    private void PrintQuizResult ()
+    private void PrintQuizResult()
     {
         string usernameText = "";
         string resultText = "";
@@ -795,7 +806,7 @@ public class UserManager : MonoBehaviour
         FirebaseManager.instance.SetQuizText(result);
     }
 
-    private void ClearAllStudentEpiId ()
+    private void ClearAllStudentEpiId()
     {
         if (playerHandler.RegisterData.IsProfessor)
         {
@@ -821,7 +832,7 @@ public class UserManager : MonoBehaviour
         SetWorldStateArg(stateArg);
     }
 
-    private void OnPlayerWaypointClicked (WaypointHandler waypointHandler)
+    private void OnPlayerWaypointClicked(WaypointHandler waypointHandler)
     {
         if (!isPlayerLogged)
         {
@@ -979,7 +990,7 @@ public class UserManager : MonoBehaviour
         }
     }
 
-    private void OnClientMessageChanged (string userId, string message)
+    private void OnClientMessageChanged(string userId, string message)
     {
         if (userId == "")
         {
@@ -999,7 +1010,7 @@ public class UserManager : MonoBehaviour
         FirebaseManager.instance.SetUserRuntimeAttribute(userId, UserRuntimeAttribute.message, message);
     }
 
-    private void PrintWorldStateMessage ()
+    private void PrintWorldStateMessage()
     {
         if (WorldStateDict.TryGetValue(CurrentWorldState.ToString(), out var stateData))
         {
@@ -1014,12 +1025,12 @@ public class UserManager : MonoBehaviour
         }
     }
 
-    private void PrintWorldStateMessageDirectly (StateData stateData)
+    private void PrintWorldStateMessageDirectly(StateData stateData)
     {
         OnWorldStateDataChanged?.Invoke(CurrentWorldState, stateData);
     }
 
-    private void OnObjectPicked (ObjectHandler obj)
+    private void OnObjectPicked(ObjectHandler obj)
     {
         if (playerHandler.CurrentObject != null)
         {
@@ -1030,7 +1041,7 @@ public class UserManager : MonoBehaviour
         playerHandler.SetObjectHandler(obj);
     }
 
-    private DropData OnObjectDropped (ObjectHandler obj)
+    private DropData OnObjectDropped(ObjectHandler obj)
     {
         if (playerHandler.CurrentObject == null)
         {
@@ -1051,7 +1062,7 @@ public class UserManager : MonoBehaviour
         return new DropData { transformToDrop = null, dropOnOrigin = true };
     }
 
-    private void OnQuizResultTextChanged (object sender, ValueChangedEventArgs args)
+    private void OnQuizResultTextChanged(object sender, ValueChangedEventArgs args)
     {
         var message = args.Snapshot.Value.ToString();
         var texts = message.Split('$');
@@ -1061,7 +1072,7 @@ public class UserManager : MonoBehaviour
         }
     }
 
-    private void OnCharacterMovementSpeedChanged (object sender, ValueChangedEventArgs args)
+    private void OnCharacterMovementSpeedChanged(object sender, ValueChangedEventArgs args)
     {
         float speed = float.Parse(args.Snapshot.Value.ToString());
         if (playerHandler != null)
@@ -1070,7 +1081,7 @@ public class UserManager : MonoBehaviour
         }
     }
 
-    private void OnPlayerWaypointReached (ClientHandler clientHandler, WaypointHandler waypoint)
+    private void OnPlayerWaypointReached(ClientHandler clientHandler, WaypointHandler waypoint)
     {
         for (int i = 0; i < mateHandlers.Count; i++)
         {
@@ -1078,12 +1089,12 @@ public class UserManager : MonoBehaviour
         }
     }
 
-    private void OnMateWaypointReached (ClientHandler clientHandler, WaypointHandler waypoint)
+    private void OnMateWaypointReached(ClientHandler clientHandler, WaypointHandler waypoint)
     {
         clientHandler.ShowModel(waypoint != playerHandler.CurrentWaypoint);
     }
 
-    public void OnSendMsgButtonClicked (string message, string destination, int destinationValue)
+    public void OnSendMsgButtonClicked(string message, string destination, int destinationValue)
     {
         if (playerHandler == null || !playerHandler.IsClientInitialized)
         {
@@ -1120,7 +1131,7 @@ public class UserManager : MonoBehaviour
         OnReceivedMessage?.Invoke(msg);
     }
 
-    private void UpdateUsernameDestinationMsg ()
+    private void UpdateUsernameDestinationMsg()
     {
         List<string> destinationOptions = new List<string>();
         destinationOptions.Add("Geral");
@@ -1137,13 +1148,13 @@ public class UserManager : MonoBehaviour
         OnDestinationMsgUsernamesChanged?.Invoke(destinationOptions);
     }
 
-    public void OnMateMessageValueChanged (object sender, ValueChangedEventArgs args)
+    public void OnMateMessageValueChanged(object sender, ValueChangedEventArgs args)
     {
         var message = args.Snapshot.Value.ToString();
         OnReceivedMessage?.Invoke(message);
     }
 
-    private void OnStudentFireStateValueChanged (string _userId, int fireStateValue)
+    private void OnStudentFireStateValueChanged(string _userId, int fireStateValue)
     {
         if (fireAccidentDone)
         {
@@ -1183,7 +1194,7 @@ public class UserManager : MonoBehaviour
         }
     }
 
-    private void OnProfessorFireExtinguishedDone ()
+    private void OnProfessorFireExtinguishedDone()
     {
         fireAccidentDone = true;
         fireHandler.DeactivateFire();
@@ -1195,7 +1206,7 @@ public class UserManager : MonoBehaviour
         });
     }
 
-    private void OnPlayerFireStateChanged (int _fireStateValue)
+    private void OnPlayerFireStateChanged(int _fireStateValue)
     {
         if (_fireStateValue > 2)
         {
