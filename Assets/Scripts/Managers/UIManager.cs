@@ -408,16 +408,22 @@ public class UIManager : MonoBehaviour
         NonNativeKeyboard.Instance.RepositionKeyboard(targetPosition);
     }
 
-    private void OnChatFieldSelected ()
+    private void OnChatFieldSelected()
     {
         msgWriteChatText.text = "";
         NonNativeKeyboard.Instance.transform.SetParent(msgWriteChatText.transform);
         NonNativeKeyboard.Instance.InputField = msgWriteChatText;
         NonNativeKeyboard.Instance.PresentKeyboard();
+        NonNativeKeyboard.Instance.SetScaleSizeValues(1.8f, 1.8f, 0f, 10f);
+        float verticaloffset = -1f;
+        Vector3 direction = msgWriteChatText.transform.forward;
+        direction.y = 0f;
+        Vector3 targetPosition = msgWriteChatText.transform.position + direction * 0.5f + Vector3.up * verticaloffset;
+        NonNativeKeyboard.Instance.RepositionKeyboard(targetPosition);
         var rectTrasnform = NonNativeKeyboard.Instance.GetComponent<RectTransform>();
-        rectTrasnform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+        rectTrasnform.localScale = new Vector3(1f, 1f, 1f);
         rectTrasnform.localRotation = Quaternion.identity;
-        rectTrasnform.localPosition = new Vector3(320f, -100f, 0f);
+        rectTrasnform.localPosition = new Vector3(0f, -280f, 0f);
     }
 
     private void ShowWorldStateMessage (WorldState worldState, StateData stateData)
